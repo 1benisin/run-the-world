@@ -1,19 +1,31 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, SafeAreaView, View } from 'react-native';
+import Map from './components/Map';
 
-export default function App() {
+// A placeholder until we get our own location
+const region = {
+  latitude: 37.321996988,
+  longitude: -122.0325472123455,
+  latitudeDelta: 0.0922,
+  longitudeDelta: 0.0421
+};
+
+const App = () => {
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      <Map
+        region={region}
+        // places={this.state.coffeeShops}
+      />
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+    width: '100%',
+    height: '80%'
+  }
+};
+
+export default App;
