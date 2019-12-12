@@ -7,26 +7,19 @@ import latLngArrays from '../fake-data/fake-data';
 import * as runActions from '../store/actions/run';
 
 const Map = props => {
-  const [currentRun, setCurrentRun] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [startButtonTitle, setStartButtonTitle] = useState('Start');
 
-  const currentRunFromRedux = useSelector(state => state.runs.currentRun);
+  const currentRunFromRedux = useSelector(state =>
+    state.runs.currentRun ? state.runs.currentRun.coords : null
+  );
 
   const dispatch = useDispatch();
 
-  // setCurrentRun([
-  //   { latitude: 47.623286, longitude: -122.353454 },
-  //   { latitude: 47.623361, longitude: -122.351116 },
-  //   { latitude: 47.624067, longitude: -122.345782 }
-  // ]);
-
   const longMapPressHandler = e => {
-    console.log(currentRunFromRedux);
-    if (isRunning && currentRunFromRedux < 4) {
-      setCurrentRun([...currentRun, e.nativeEvent.coordinate]);
+    if (isRunning) {
+      dispatch(runActions.updateCurrentRun(e.nativeEvent.coordinate));
     }
-    // dispatch(runActions.startCurrentRun);
   };
 
   const onStartButtonPressHandler = () => {
@@ -61,10 +54,10 @@ const Map = props => {
             fillColor="rgba(0, 255, 255, 0.4)"
           />
         ))}
-        {currentRun.length > 2 && (
+        {currentRunFromRedux && currentRunFromRedux.length > 2 && (
           // <Text>more that 2 coords in currentRun</Text>
           <Polygon
-            coordinates={currentRun}
+            coordinates={currentRunFromRedux}
             strokeColor="#ccc"
             fillColor="rgba(200, 0, 255, 0.4)"
           />
