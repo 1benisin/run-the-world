@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import { Button, Dimensions, StyleSheet, Text, View } from 'react-native';
 import MapView, { Polygon } from 'react-native-maps';
+import { useSelector, useDispatch } from 'react-redux';
+
 import latLngArrays from '../fake-data/fake-data';
+import * as runActions from '../store/actions/run';
 
 const Map = props => {
   const [currentRun, setCurrentRun] = useState([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const [startButtonTitle, setStartButtonTitle] = useState('Start');
+
+  const currentRunFromRedux = useSelector(state => state.runs.currentRun);
+
+  const dispatch = useDispatch();
 
   // setCurrentRun([
   //   { latitude: 47.623286, longitude: -122.353454 },
@@ -13,9 +22,21 @@ const Map = props => {
   // ]);
 
   const longMapPressHandler = e => {
-    console.log(e);
-    setCurrentRun([...currentRun, e.nativeEvent.coordinate]);
-    console.log(currentRun);
+    console.log(currentRunFromRedux);
+    if (isRunning && currentRunFromRedux < 4) {
+      setCurrentRun([...currentRun, e.nativeEvent.coordinate]);
+    }
+    // dispatch(runActions.startCurrentRun);
+  };
+
+  const onStartButtonPressHandler = () => {
+    if (isRunning) {
+      setIsRunning(false);
+      setStartButtonTitle('Start');
+    } else {
+      setIsRunning(true);
+      setStartButtonTitle('Stop');
+    }
   };
 
   const region = {
@@ -51,10 +72,11 @@ const Map = props => {
       </MapView>
       <View style={styles.buttonContainer}>
         <Button
-          title="START"
+          title={startButtonTitle}
           color="#003B00"
           accessibilityLabel="Learn more about this purple button"
           style={styles.button}
+          onPress={onStartButtonPressHandler}
         />
       </View>
     </View>
