@@ -1,9 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Dimensions, StyleSheet, Text, View } from 'react-native';
 import MapView, { Polygon } from 'react-native-maps';
 import latLngArrays from '../fake-data/fake-data';
 
 const Map = props => {
+  const [currentRun, setCurrentRun] = useState([]);
+
+  // setCurrentRun([
+  //   { latitude: 47.623286, longitude: -122.353454 },
+  //   { latitude: 47.623361, longitude: -122.351116 },
+  //   { latitude: 47.624067, longitude: -122.345782 }
+  // ]);
+
+  const longMapPressHandler = e => {
+    console.log(e);
+    setCurrentRun([...currentRun, e.nativeEvent.coordinate]);
+    console.log(currentRun);
+  };
+
   const region = {
     latitude: 47.620937,
     longitude: -122.35282,
@@ -13,7 +27,11 @@ const Map = props => {
 
   return (
     <View style={styles.container}>
-      <MapView style={styles.mapStyle} region={region}>
+      <MapView
+        style={styles.mapStyle}
+        region={region}
+        onLongPress={longMapPressHandler}
+      >
         {latLngArrays.map((territory, key) => (
           <Polygon
             key={key}
@@ -22,6 +40,14 @@ const Map = props => {
             fillColor="rgba(0, 255, 255, 0.4)"
           />
         ))}
+        {currentRun.length > 2 && (
+          // <Text>more that 2 coords in currentRun</Text>
+          <Polygon
+            coordinates={currentRun}
+            strokeColor="#ccc"
+            fillColor="rgba(200, 0, 255, 0.4)"
+          />
+        )}
       </MapView>
       <View style={styles.buttonContainer}>
         <Button
@@ -48,7 +74,7 @@ const styles = StyleSheet.create({
     height: Dimensions.get('window').height
   },
   button: {
-    // borderRadius: 100
+    width: '50%'
   },
   buttonContainer: {
     position: 'absolute',
