@@ -13,17 +13,9 @@ const initialState = {
 
 export default (state = initialState, action) => {
   switch (action.type) {
-    case START_CURRENT_RUN:
-      const newRun = new Run(Date.now(), [action.startCoord], Date.now(), null);
-      console.log('newRun', newRun);
-      return {
-        ...state,
-        currentRun: newRun
-      };
-
     case UPDATE_CURRENT_RUN:
       let currentRun;
-
+      // figure out if run is just starting or updating
       if (state.currentRun.coords) {
         currentRun = {
           ...state.currentRun,
@@ -36,6 +28,14 @@ export default (state = initialState, action) => {
       return {
         ...state,
         currentRun: currentRun
+      };
+
+    case END_CURRENT_RUN:
+      const newRun = state.currentRun;
+      return {
+        ...state,
+        currentRun: {},
+        previousRuns: [...state.previousRuns, newRun]
       };
 
     default:

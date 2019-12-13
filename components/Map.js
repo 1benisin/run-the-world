@@ -10,22 +10,27 @@ const Map = props => {
   const [isRunning, setIsRunning] = useState(false);
   const [startButtonTitle, setStartButtonTitle] = useState('Start');
 
-  const currentRunFromRedux = useSelector(state =>
+  const currentRun = useSelector(state =>
     state.runs.currentRun ? state.runs.currentRun.coords : null
+  );
+  const allRuns = useSelector(state =>
+    state.runs.previousRuns.map(run => run.coords)
   );
 
   const dispatch = useDispatch();
 
-  const longMapPressHandler = e => {
+  const simulateNewRunCoordinate = e => {
     if (isRunning) {
       dispatch(runActions.updateCurrentRun(e.nativeEvent.coordinate));
     }
   };
 
   const onStartButtonPressHandler = () => {
+    // console.log('all runs', allRuns);
     if (isRunning) {
       setIsRunning(false);
       setStartButtonTitle('Start');
+      dispatch(runActions.endCurrentRun());
     } else {
       setIsRunning(true);
       setStartButtonTitle('Stop');
@@ -44,9 +49,9 @@ const Map = props => {
       <MapView
         style={styles.mapStyle}
         region={region}
-        onLongPress={longMapPressHandler}
+        onPress={simulateNewRunCoordinate}
       >
-        {latLngArrays.map((territory, key) => (
+        {allRuns.map((territory, key) => (
           <Polygon
             key={key}
             coordinates={territory}
@@ -54,10 +59,10 @@ const Map = props => {
             fillColor="rgba(0, 255, 255, 0.4)"
           />
         ))}
-        {currentRunFromRedux && currentRunFromRedux.length > 2 && (
+        {currentRun && currentRun.length > 2 && (
           // <Text>more that 2 coords in currentRun</Text>
           <Polygon
-            coordinates={currentRunFromRedux}
+            coordinates={currentRun}
             strokeColor="#ccc"
             fillColor="rgba(200, 0, 255, 0.4)"
           />
