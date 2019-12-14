@@ -1,5 +1,5 @@
 import {
-  END_CURRENT_RUN,
+  SAVE_CURRENT_RUN,
   FETCH_RUNS,
   START_CURRENT_RUN,
   UPDATE_CURRENT_RUN
@@ -30,12 +30,10 @@ export default (state = initialState, action) => {
         currentRun: currentRun
       };
 
-    case END_CURRENT_RUN:
-      const newRun = state.currentRun;
+    case SAVE_CURRENT_RUN:
       return {
         ...state,
-        currentRun: {},
-        previousRuns: [...state.previousRuns, newRun]
+        previousRuns: [...state.previousRuns, action.newRun]
       };
 
     default:
