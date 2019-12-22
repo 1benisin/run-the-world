@@ -1,49 +1,47 @@
-export const START_CURRENT_RUN = 'START_CURRENT_RUN';
-export const UPDATE_CURRENT_RUN = 'UPDATE_CURRENT_RUN';
-export const SAVE_CURRENT_RUN = 'SAVE_CURRENT_RUN';
 export const FETCH_RUNS = 'FETCH_RUNS';
+export const SAVE_RUN_REQUEST = 'SAVE_RUN_REQUEST';
+export const SAVE_RUN_SUCCESS = 'SAVE_RUN_SUCCESS';
+export const SAVE_RUN_FAILURE = 'SAVE_RUN_FAILURE';
 
-import Run from '../../models/run';
-
-export const startCurrentRun = startCoord => {
-  return { type: START_CURRENT_RUN, startCoord: startCoord };
-};
-
-export const updateCurrentRun = coordToAdd => {
-  return { type: UPDATE_CURRENT_RUN, coord: coordToAdd };
-};
-
-export const saveCurrentRun = (userId, coords, startTime) => {
+export const saveRun = (userId, coords, startTime) => {
+  // Redux Thunk will inject dispatch here:
   return async dispatch => {
-    // create new run
-    const endTime = Date.now();
-    const finishedRun = {
-      userId,
-      coords,
-      startTime,
-      endTime
-    };
-    // do polygon math
-    // update territories
-    const response = await fetch(
-      'https://run-the-world-v1.firebaseio.com/runs.json',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(finishedRun)
+    // Reducers may handle this to set a flag like isFetching
+    dispatch({ type: SAVE_RUN_REQUEST });
+
+    try {
+      // Perform the actual API call
+      const newRun = {
+        userId,
+        coords,
+        startTime,
+        endTime: Date.now()
+      };
+      const response = await fetch(
+        'https://run-the-world-v1.firebaseio.com/runs.json',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(newRun)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Something went wrong with saveRun action');
       }
-    );
 
-    if (!response.ok) {
-      throw new Error('Something went wrong with saveCurrentRun action');
+      const resData = await response.json();
+      newRun.id = resData.name;
+      // Reducers may handle this to show the data and reset isFetching
+      dispatch({ type: SAVE_RUN_SUCCESS, newRun });
+      return newRun;
+    } catch (error) {
+      // Reducers may handle this to reset isFetching
+      dispatch({ type: SAVE_RUN_FAILURE, error });
+      // Rethrow so returned Promise is rejected
+      throw error;
     }
-
-    const resData = await response.json();
-    console.log('resData', resData);
-
-    const newRun = new Run(resData.name, userId, coords, startTime, endTime);
-    dispatch({ type: SAVE_CURRENT_RUN, newRun: newRun });
   };
 };

@@ -5,6 +5,8 @@ import { Provider } from 'react-redux';
 import MainTabNavigator from './navigation/MainTabNavigator';
 import store from './store/store';
 
+import TestMap from './fake-data/TestMap';
+
 const App = () => {
   return (
     <Provider store={store}>

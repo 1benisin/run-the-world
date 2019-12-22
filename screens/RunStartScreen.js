@@ -3,11 +3,12 @@ import { Button, StyleSheet, Text, View } from 'react-native';
 
 import Colors from '../constants/Colors';
 import Map from '../components/Map';
+import Map2 from '../components/Map2';
 
 const RunStartScreen = props => {
   return (
     <View style={styles.screen}>
-      <Map />
+      <Map2 />
     </View>
   );
 };
