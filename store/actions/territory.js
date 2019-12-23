@@ -20,7 +20,7 @@ export const saveTerritory = (userId, coords, runIds) => {
         runs: runIds
       };
       const response = await fetch(
-        'https://run-the-world-v1.firebaseio.com/runs.json',
+        'https://run-the-world-v1.firebaseio.com/territories.json',
         {
           method: 'POST',
           headers: {
@@ -48,44 +48,17 @@ export const saveTerritory = (userId, coords, runIds) => {
   };
 };
 
-export const newTerritory = (userId, coords, runIds) => {
-  return async (dispatch, getState) => {
-    const time = Date.now();
-    const territoryToAdd = {
-      userId: userId,
-      coords: coords,
-      dateCreated: time,
-      dateModified: time,
-      runs: runIds
-    };
+export const fetchTerritories = () => {
+  // expects {northEast: LatLng, southWest: LatLng}
+  return async dispatch => {
+    const territories = await fetchTerritoriesFromDB();
+    console.log('fetched territories', territories);
 
-    let resData;
-    try {
-      const response = await fetch(
-        'https://run-the-world-v1.firebaseio.com/territories.json',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(territoryToAdd)
-        }
-      );
-      if (!response.ok) {
-        throw new Error('Something went wrong with newTerritory action');
-      }
-      resData = await response.json();
-    } catch (error) {
-      console.log(error);
-    }
-
-    territoryToAdd.id = resData.name;
-
-    dispatch({ type: NEW_TERRITORY, territoryToAdd: territoryToAdd });
+    dispatch({ type: FETCH_TERRITORIES, territories });
   };
 };
 
-export const fetchTerritories = region => {
+export const fetchTerritoriesInBounds = region => {
   // expects {northEast: LatLng, southWest: LatLng}
   return async dispatch => {
     const resData = await fetchTerritoriesFromDB();

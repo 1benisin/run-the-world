@@ -3,11 +3,9 @@ import { Button, Dimensions, StyleSheet, Text, View } from 'react-native';
 import MapView, { Polygon } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
 
-import latLngArrays from '../fake-data/fake-data';
 import * as runActions from '../store/actions/run';
 import * as territoryActions from '../store/actions/territory';
 import * as polyHelper from '../helpers/polyHelper';
-import Territory from '../models/territory';
 
 const Map = props => {
   const [currentRunStartTime, setCurrentRunStartTime] = useState();
@@ -18,6 +16,10 @@ const Map = props => {
   const dispatch = useDispatch();
 
   const territories = useSelector(state => state.territories);
+
+  useEffect(() => {
+    dispatch(territoryActions.fetchTerritories());
+  }, []);
 
   const handleRegionChange = async region => {
     console.log('region', region);
@@ -33,7 +35,7 @@ const Map = props => {
 
   const mergeTerritories = async (runCoords, allTerritories) => {
     // find all user territories that overlap current run
-    let overlappingTerrs = allTerritories.filter(
+    const overlappingTerrs = allTerritories.filter(
       ter =>
         ter.userId === 'user1' && polyHelper.polysOverlap(runCoords, ter.coords)
     );
@@ -61,13 +63,20 @@ const Map = props => {
       // handle territory unions
       const mergeResult = await mergeTerritories(runCoords, territories);
       // save new territory
-      const runIds = mergeResult.overlappingTerrs.reduce((acc, terr) => {
-        return [...acc, ...terr.runs];
-      }, []);
+      const runIds = [
+        ...mergeResult.overlappingTerrs.reduce((acc, terr) => {
+          return [...acc, ...terr.runs];
+        }, []),
+        savedRun.id
+      ];
+      console.log(runIds);
       const savedTerr = await dispatch(
-        territoryActions.saveTerritory('user1', runCoords, runIds)
+        territoryActions.saveTerritory(
+          'user1',
+          mergeResult.newTerCoords,
+          runIds
+        )
       );
-      console.log(savedTerr);
       // handle territory subtractions
 
       setCurrentRunCoords([]);

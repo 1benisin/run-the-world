@@ -15,7 +15,7 @@ const initialState = [
     ],
     dateCreated: 1576715078146,
     dateModified: 1576715078146,
-    runs: ['-LwQXgfP8s3ZPuxOQgNW'],
+    runs: ['-LwQXgfP8s3ZPuxOQgOP'],
     userId: 'user1'
   },
   {
@@ -47,9 +47,10 @@ export default (state = initialState, action) => {
       return [...state, newTer];
 
     case FETCH_TERRITORIES:
-      const newTerrs = action.territories.map(terr => {
+      const newTerrs = Object.keys(action.territories).map(key => {
+        const terr = action.territories[key];
         return new Territory(
-          terr.id,
+          key,
           terr.userId,
           terr.coords,
           terr.dateCreated,
