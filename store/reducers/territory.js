@@ -1,6 +1,7 @@
 import {
   FETCH_TERRITORIES,
-  SAVE_TERRITORY_SUCCESS
+  SAVE_TERRITORY_SUCCESS,
+  DELETE_TERRITORIES
 } from '../actions/territory';
 import Territory from '../../models/territory';
 
@@ -47,6 +48,7 @@ export default (state = initialState, action) => {
       return [...state, newTer];
 
     case FETCH_TERRITORIES:
+      if (!Object.keys(action.territories).length) return state;
       const newTerrs = Object.keys(action.territories).map(key => {
         const terr = action.territories[key];
         return new Territory(
@@ -59,6 +61,12 @@ export default (state = initialState, action) => {
         );
       });
       return [...newTerrs];
+
+    case DELETE_TERRITORIES:
+      const newState = state.filter(
+        ter => !action.deleteResults.includes(ter.id)
+      );
+      return [...newState];
 
     default:
       return state;

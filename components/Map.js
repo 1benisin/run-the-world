@@ -24,7 +24,6 @@ const Map = props => {
   });
 
   const regionChangeHandler = async region => {
-    console.log('region', region);
     dispatch(territoryActions.fetchTerritories(region));
   };
 
@@ -37,7 +36,6 @@ const Map = props => {
 
   const onStartButtonPressHandler = () => {
     if (isRunning) {
-      console.log(polyHelper.coordsToPoly(currentRunCoords));
       setIsRunning(false);
       setStartButtonTitle('Start');
       dispatch(

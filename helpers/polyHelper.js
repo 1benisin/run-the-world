@@ -26,7 +26,6 @@ export const polysOverlap = (poly1, poly2) => {
   for (let i = 0; i < poly1.length; i++) {
     const point = poly1[i];
     if (classifyPoint(poly2, point) < 0) {
-      console.log('OVERLAPS');
       overlap = true;
       break;
     }
@@ -68,6 +67,6 @@ export const sanitizeInversion = polygon => {
   });
 
   let nonInvertedPolygon = [...polygon];
-  console.log(sum);
+
   return sum > 0 ? nonInvertedPolygon.reverse() : nonInvertedPolygon;
 };

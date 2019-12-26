@@ -22,7 +22,6 @@ const Map = props => {
   }, []);
 
   const handleRegionChange = async region => {
-    console.log('region', region);
     dispatch(territoryActions.fetchTerritories(region));
   };
 
@@ -63,13 +62,10 @@ const Map = props => {
       // handle territory unions
       const mergeResult = await mergeTerritories(runCoords, territories);
       // save new territory
-      const runIds = [
-        ...mergeResult.overlappingTerrs.reduce((acc, terr) => {
-          return [...acc, ...terr.runs];
-        }, []),
-        savedRun.id
-      ];
-      console.log(runIds);
+      const mergedRunIds = mergeResult.overlappingTerrs.reduce((acc, terr) => {
+        return [...acc, ...terr.runs];
+      }, []);
+      const runIds = [...mergedRunIds, savedRun.id];
       const savedTerr = await dispatch(
         territoryActions.saveTerritory(
           'user1',
@@ -77,6 +73,9 @@ const Map = props => {
           runIds
         )
       );
+      // delete older merged territories
+      const terrToDelete = mergeResult.overlappingTerrs.map(ter => ter.id);
+      dispatch(territoryActions.deleteTerritories(terrToDelete));
       // handle territory subtractions
 
       setCurrentRunCoords([]);

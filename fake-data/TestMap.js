@@ -19,7 +19,6 @@ export default class TestMap extends Component {
   setMapRef = ref => (this.mapRef = ref);
 
   handleRegionChange = async region => {
-    console.log('region', region);
     // console.log(this.mapRef);
     // try {
     //   const result = await this.mapRef.getMapBoundaries();

@@ -2,6 +2,7 @@ export const FETCH_TERRITORIES = 'FETCH_TERRITORIES';
 export const SAVE_TERRITORY_REQUEST = 'SAVE_TERRITORY_REQUEST';
 export const SAVE_TERRITORY_SUCCESS = 'SAVE_TERRITORY_SUCCESS';
 export const SAVE_TERRITORY_FAILURE = 'SAVE_TERRITORY_FAILURE';
+export const DELETE_TERRITORIES = 'DELETE_TERRITORIES';
 
 export const saveTerritory = (userId, coords, runIds) => {
   // Redux Thunk will inject dispatch here:
@@ -51,8 +52,8 @@ export const saveTerritory = (userId, coords, runIds) => {
 export const fetchTerritories = () => {
   // expects {northEast: LatLng, southWest: LatLng}
   return async dispatch => {
-    const territories = await fetchTerritoriesFromDB();
-    console.log('fetched territories', territories);
+    let territories = await fetchTerritoriesFromDB();
+    territories = territories ? territories : {};
 
     dispatch({ type: FETCH_TERRITORIES, territories });
   };
@@ -62,7 +63,6 @@ export const fetchTerritoriesInBounds = region => {
   // expects {northEast: LatLng, southWest: LatLng}
   return async dispatch => {
     const resData = await fetchTerritoriesFromDB();
-    console.log('resData', resData);
     const mapBounds = {
       north: region.latitude + region.latitudeDelta / 2,
       south: region.latitude - region.latitudeDelta / 2,
@@ -91,6 +91,33 @@ export const fetchTerritoriesInBounds = region => {
           }, []);
 
     dispatch({ type: FETCH_TERRITORIES, territories: terrsWithinBounds });
+  };
+};
+
+export const deleteTerritories = terrIds => {
+  return async dispatch => {
+    const promises = terrIds.map(async id => {
+      try {
+        const response = await fetch(
+          `https://run-the-world-v1.firebaseio.com/territories/${id}.json`,
+          {
+            method: 'DELETE'
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Something went wrong with deleteTerritories action');
+        }
+
+        return id;
+      } catch (error) {
+        console.log(error);
+      }
+    });
+
+    const deleteResults = await Promise.all(promises);
+    dispatch({ type: DELETE_TERRITORIES, deleteResults });
+    return deleteResults;
   };
 };
 
