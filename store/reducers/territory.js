@@ -4,16 +4,12 @@ import {
   DELETE_TERRITORIES
 } from '../actions/territory';
 import Territory from '../../models/territory';
+import * as testData from '../../fake-data/fake-data';
 
 const initialState = [
   {
     id: '-LwQXgfP8s3ZPuxOQgNW',
-    coords: [
-      [47.615987421710436, -122.35187273472549],
-      [47.619877785560334, -122.35499516129494],
-      [47.62008999122647, -122.34373055398466],
-      [47.61670725350713, -122.34495531767607]
-    ],
+    coords: testData.snake.merged,
     dateCreated: 1576715078146,
     dateModified: 1576715078146,
     runs: ['-LwQXgfP8s3ZPuxOQgOP'],
@@ -21,12 +17,7 @@ const initialState = [
   },
   {
     id: '-LwUN6fFACaGAHHUAkPP',
-    coords: [
-      [47.62294055977313, -122.35076531767845],
-      [47.62853458032193, -122.34092462807892],
-      [47.62083620708049, -122.33744647353888],
-      [47.61841198360306, -122.3413584753871]
-    ],
+    coords: testData.cross.vertical,
     dateCreated: 1576779413035,
     dateModified: 1576779413035,
     runs: ['-LwUN6dwI4UV3h5LzGQL'],
