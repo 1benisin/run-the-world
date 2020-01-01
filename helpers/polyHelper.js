@@ -33,11 +33,24 @@ export const polysOverlap = (poly1, poly2) => {
   return overlap;
 };
 
+export const poly1FullyContainsPoly2 = (poly1, poly2) => {
+  let fullyContained = true;
+  for (let i = 0; i < poly2.length; i++) {
+    const point = poly2[i];
+    if (classifyPoint(poly1, point) > 0) {
+      fullyContained = false;
+      break;
+    }
+  }
+  return fullyContained;
+};
+
 export const difference = (poly1, poly2) => {
   const region1 = pointsToRegion(sanitizeInversion(poly1));
   const region2 = pointsToRegion(sanitizeInversion(poly2));
   const difRegion = PolyBool.difference(region1, region2);
-  return difRegion.regions;
+  // if only 2 regions come back check if poly2 is fully contained shape inside of poly1
+  return poly1FullyContainsPoly2(poly1, poly2) ? [poly1] : difRegion.regions;
 };
 
 export const merge = (poly1, poly2) => {

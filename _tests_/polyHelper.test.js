@@ -1,6 +1,38 @@
 import * as polyHelper from '../helpers/polyHelper';
 import * as testData from '../fake-data/fake-data';
 
+describe('f() difference', () => {
+  test('basic cross shape', () => {
+    expect(
+      polyHelper.difference(testData.cross.vertical, testData.cross.horizontal)
+    ).toEqual(testData.cross.difference);
+  });
+
+  test('snake & spike', () => {
+    expect(
+      polyHelper.difference(testData.snake.snake, testData.snake.spike)
+    ).toEqual(testData.snake.difference);
+  });
+
+  test('island surrounded', () => {
+    expect(
+      polyHelper.difference(testData.island.inner, testData.island.outer)
+    ).toEqual([]);
+  });
+
+  test('cut island out of shape', () => {
+    expect(
+      polyHelper.difference(testData.island.outer, testData.island.inner)
+    ).toEqual([testData.island.outer]);
+  });
+
+  test('donut shape', () => {
+    expect(
+      polyHelper.difference(testData.donut.top, testData.donut.bottom)
+    ).toEqual(testData.donut.difference);
+  });
+});
+
 describe('f() sanitizeInversion', () => {
   test('reverses an inverted polygon', () => {
     expect(polyHelper.sanitizeInversion(testData.inverted.inverted)).toEqual(
@@ -46,7 +78,13 @@ describe('f() merge', () => {
   test('snake & spike shape', () => {
     expect(
       polyHelper.merge(testData.snake.snake, testData.snake.spike)
-    ).toEqual();
+    ).toEqual(testData.snake.merged);
+  });
+
+  test('internal island shape', () => {
+    expect(
+      polyHelper.merge(testData.island.outer, testData.island.inner)
+    ).toEqual(testData.island.merge);
   });
 
   test('with inverted shape', () => {
