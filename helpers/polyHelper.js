@@ -44,7 +44,8 @@ export const merge = (poly1, poly2) => {
   const region1 = pointsToRegion(sanitizeInversion(poly1));
   const region2 = pointsToRegion(sanitizeInversion(poly2));
   const mergedRegions = PolyBool.union(region1, region2);
-  return mergedRegions.regions[0];
+  // only return last region, all other regions are holes
+  return mergedRegions.regions.pop();
 };
 
 // invert polygon if wound counter-clockwise
@@ -67,6 +68,5 @@ export const sanitizeInversion = polygon => {
   });
 
   let nonInvertedPolygon = [...polygon];
-
-  return sum > 0 ? nonInvertedPolygon.reverse() : nonInvertedPolygon;
+  return sum < 0 ? nonInvertedPolygon.reverse() : nonInvertedPolygon;
 };
