@@ -5,8 +5,8 @@ import SigninScreen from '../screens/SigninScreen';
 import RunStartScreen from '../screens/RunStartScreen';
 
 const MainStackNavigator = createStackNavigator({
-  Signin: SigninScreen,
-  RunStart: RunStartScreen
+  RunStart: RunStartScreen,
+  Signin: SigninScreen
 });
 
 export default createAppContainer(MainStackNavigator);
