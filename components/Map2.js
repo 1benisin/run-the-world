@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import MapView, { Polygon } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
+var geodist = require('geodist');
 
 import * as runActions from '../store/actions/run';
 import * as territoryActions from '../store/actions/territory';
@@ -62,6 +63,42 @@ const combineTerritoryRunIds = territories => {
   }, []);
 };
 
+const asyncAlertRunTooShort = async runTotalDistance =>
+  new Promise(resolve => {
+    Alert.alert(
+      'Run Too Short',
+      `You ran ${Math.round(
+        runTotalDistance
+      )} feet. You must run at least 1000 ft`,
+      [
+        {
+          text: 'Continue Run',
+          onPress: () => resolve(true),
+          style: 'cancel'
+        },
+        { text: 'End Run', onPress: () => resolve(false) }
+      ],
+      { cancelable: false }
+    );
+  });
+
+const asyncAlertTooFarFromStart = async distBetweenStartFinish =>
+  new Promise(resolve => {
+    Alert.alert(
+      'Too Far From Start',
+      `Your run will be saved but no territory will be conquered. You must be less than 100 feet from starting point of your run to conquer territory. ${distBetweenStartFinish} feet away.`,
+      [
+        {
+          text: 'Continue Running',
+          onPress: () => resolve(true),
+          style: 'cancel'
+        },
+        { text: 'End Run', onPress: () => resolve(false) }
+      ],
+      { cancelable: false }
+    );
+  });
+
 const Map = props => {
   const [currentRunStartTime, setCurrentRunStartTime] = useState();
   const [currentRunCoords, setCurrentRunCoords] = useState([]);
@@ -87,21 +124,51 @@ const Map = props => {
     }
   };
 
-  const handleStartButtonPress = async () => {
+  const handleRunButtonPress = async () => {
+    // if currently running, stop run
     if (isRunning) {
-      setIsRunning(false);
-      setStartButtonTitle('Start');
+      let runCoords = polyHelper.coordsToPoly(currentRunCoords);
 
-      const runCoords = polyHelper.coordsToPoly(currentRunCoords);
+      // check if run is too short
+      let runTotalDistance = 0;
+      for (let i = 0; i < runCoords.length - 1; i++) {
+        const coord = runCoords[i];
+        const nextCoord = runCoords[i + 1];
+        runTotalDistance =
+          runTotalDistance +
+          geodist(coord, nextCoord, { exact: true, unit: 'feet' });
+      }
+      let continueRun = false;
+      if (runTotalDistance < 1000) {
+        continueRun = await asyncAlertRunTooShort(runTotalDistance);
+      }
+      if (continueRun) return;
+
+      // check if start and finish of run are close enough
+      const distBetweenStartFinish = geodist(
+        runCoords[0],
+        runCoords[runCoords.length - 1],
+        { unit: 'feet' }
+      );
+      if (distBetweenStartFinish > 100) {
+        continueRun = await asyncAlertTooFarFromStart(distBetweenStartFinish);
+      }
+      if (continueRun) return;
+
       // save new run
       const savedRun = await dispatch(
         runActions.saveRun('user1', runCoords, currentRunStartTime)
       );
+
+      // TODO fix merge run with self to deal with any runs that cross over themselves. figure 8s etc.
+      runTerritoriesCoords = polyHelper.mergeTwistedPolygon(runCoords);
+
       // handle territory unions
       const { newTerCoords, overlappingTerrs } = mergeTerritories(
-        runCoords,
+        runTerritoriesCoords,
         territories
       );
+
       // check if new territory is fully combined inside non-user territroy
       // throw an alert
       const terrToCheck = territories.filter(
@@ -109,14 +176,16 @@ const Map = props => {
           ter.userId !== 'user1' &&
           polyHelper.polysOverlap(newTerCoords, ter.coords)
       );
-      console.log('terrToCheck', terrToCheck);
+
       if (
         terrToCheck.length === 1 &&
         polyHelper.poly1FullyContainsPoly2(terrToCheck[0].coords, newTerCoords)
       ) {
-        Alert.alert('Alert Title', 'My Alert Msg', [
-          { text: 'OK', onPress: () => console.log('OK Pressed') }
-        ]);
+        Alert.alert(
+          'No Conquest Made',
+          "You cannot conquer an area fully contained inside someone's else territory",
+          [{ text: 'OK' }]
+        );
       } else {
         // save new territory
         const mergedRunIds = combineTerritoryRunIds(overlappingTerrs);
@@ -157,6 +226,9 @@ const Map = props => {
         );
         // console.log('subtractedTerResults', subtractedTerResults);
       }
+
+      setIsRunning(false);
+      setStartButtonTitle('Start');
       setCurrentRunCoords([]);
       setCurrentRunStartTime(null);
     } else {
@@ -185,17 +257,17 @@ const Map = props => {
             strokeColor="#ccc"
             fillColor={
               ter.userId === 'user1'
-                ? 'rgba(255, 100, 100, 0.4)'
-                : 'rgba(0, 100, 255, 0.4)'
+                ? 'rgba(0, 0, 255, 0.2)'
+                : 'rgba(255, 0, 0, 0.2)'
             }
           />
         ))}
-        {/* {testData.snake.difference.map(ter => (
+        {/* {testData.selfCrossing.multiCrossingMerge.map((ter, i) => (
           <Polygon
-            key={ter.id}
+            key={i}
             coordinates={polyHelper.pointsToCoords(ter)}
             strokeColor="#ccc"
-            fillColor="rgba(50, 200, 100, 0.4)"
+            fillColor="rgba(0, 255, 0, 0.4)"
           />
         ))} */}
         {currentRunCoords && currentRunCoords.length > 2 && (
@@ -203,7 +275,7 @@ const Map = props => {
           <Polygon
             coordinates={currentRunCoords}
             strokeColor="#ccc"
-            fillColor="rgba(200, 140, 255, 0.4)"
+            fillColor="rgba(200, 255, 255, 0.4)"
           />
         )}
       </MapView>
@@ -213,7 +285,7 @@ const Map = props => {
           color="#003B00"
           accessibilityLabel="Learn more about this purple button"
           style={styles.button}
-          onPress={handleStartButtonPress}
+          onPress={handleRunButtonPress}
         />
       </View>
     </View>

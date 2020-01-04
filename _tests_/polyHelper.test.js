@@ -62,11 +62,34 @@ describe('f() sanitizeInversion', () => {
   });
 });
 
+describe('f() mergeTwistedPolygon', () => {
+  test.only('multi crossing shape', () => {
+    expect(
+      polyHelper.mergeTwistedPolygon(testData.selfCrossing.multiCrossing)
+    ).toEqual(testData.selfCrossing.multiCrossingMerge);
+  });
+
+  // test('cleanPolygon', () => {
+  //   expect(
+  //     polyHelper.cleanPolygon(testData.selfCrossing.multiCrossing)
+  //   ).toEqual();
+  // });
+});
+
 describe('f() merge', () => {
   test('basic cross shape', () => {
     expect(
       polyHelper.merge(testData.cross.vertical, testData.cross.horizontal)
     ).toEqual(testData.cross.merged);
+  });
+
+  test('figure 8', () => {
+    expect(
+      polyHelper.merge(
+        testData.selfCrossing.figure8,
+        testData.selfCrossing.figure8
+      )
+    ).toEqual(testData.selfCrossing.merge);
   });
 
   test('donut shape', () => {

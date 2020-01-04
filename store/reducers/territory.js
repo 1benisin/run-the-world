@@ -7,22 +7,22 @@ import Territory from '../../models/territory';
 import * as testData from '../../fake-data/fake-data';
 
 const initialState = [
-  // {
-  //   id: '-LwQXgfP8s3ZPuxOQgNW',
-  //   coords: testData.donut.top,
-  //   dateCreated: 1576715078146,
-  //   dateModified: 1576715078146,
-  //   runs: ['-LwQXgfP8s3ZPuxOQgOP'],
-  //   userId: 'user2'
-  // },
-  // {
-  //   id: '-LwUN6fFACaGAHHUAkPP',
-  //   coords: testData.island.outer,
-  //   dateCreated: 1576779413035,
-  //   dateModified: 1576779413035,
-  //   runs: ['-LwUN6dwI4UV3h5LzGQL'],
-  //   userId: 'user2'
-  // }
+  {
+    id: '-LwQXgfP8s3ZPuxOQgNW',
+    coords: testData.selfCrossing.cleaned,
+    dateCreated: 1576715078146,
+    dateModified: 1576715078146,
+    runs: ['-LwQXgfP8s3ZPuxOQgOP'],
+    userId: 'user3'
+  },
+  {
+    id: '-LwUN6fFACaGAHHUAkPP',
+    coords: testData.cross.vertical,
+    dateCreated: 1576779413035,
+    dateModified: 1576779413035,
+    runs: ['-LwUN6dwI4UV3h5LzGQL'],
+    userId: 'user3'
+  }
 ];
 
 export default (state = initialState, action) => {

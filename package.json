@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "expo": "^35.0.0",
+    "geodist": "^0.2.1",
     "polybooljs": "^1.2.0",
     "react": "16.8.3",
     "react-dom": "16.8.3",
