@@ -118,6 +118,121 @@ export const mergeTwistedPolygon = polygon => {
   return PolyBool.polygon(segments).regions.pop();
 };
 
+export const directionOfPoint = (A, B, P) => {
+  let [Ax, Ay] = A;
+  let [Bx, By] = B;
+  let [Px, Py] = P;
+
+  Bx -= Ax;
+  By -= Ay;
+  Px -= Ax;
+  Py -= Ay;
+
+  // Determining cross Product
+  const cross_product = Bx * Py - By * Px;
+  // point is to the left
+  if (cross_product > 0) return -1;
+  // point is to the right
+  if (cross_product < 0) return 1;
+  // point is on the line
+  return 0;
+};
+
+export const untwistPolygon = polygon => {
+  //-1 find northern point
+  let northernLat = polygon[0][0];
+  let northernIndex = 0;
+  for (let i = 1; i < polygon.length; i++) {
+    const lat = polygon[i][0];
+    if (lat > northernLat) {
+      northernLat = lat;
+      northernIndex = i;
+    }
+  }
+  // return { northernLat, northernIndex };
+  //-2 make northern point the start of the polygon
+  polygon = [
+    ...polygon.slice(northernIndex, polygon.length),
+    ...polygon.slice(0, northernIndex)
+  ];
+
+  //-3 reverse polygon if not moving clockwise
+  const backward = [...polygon];
+  backward.reverse();
+  const front = backward.pop();
+  let reversedPolygon = [front, ...backward];
+  const reversePoly = () => {
+    const temp = polygon;
+    polygon = reversedPolygon;
+    reversedPolygon = temp;
+  };
+
+  const prevCoord = polygon[polygon.length - 1];
+  const nextCoord = polygon[1];
+  const northernCoord = polygon[0];
+  // if next coordinate is west and previous coordinate is east - reverse
+  if (prevCoord[1] > northernCoord[1] && nextCoord[1] < northernCoord[1]) {
+    reversePoly();
+  }
+  // if both are to the east
+  if (prevCoord[1] > northernCoord[1] && nextCoord[1] > northernCoord[1]) {
+    // and next coordinate is further south - reverse
+    if (nextCoord[0] < prevCoord[0]) {
+      reversePoly();
+    }
+  }
+  // if both are to the west
+  if (prevCoord[1] < northernCoord[1] && nextCoord[1] < northernCoord[1]) {
+    // and next coordinate is further north - reverse
+    if (nextCoord[0] > prevCoord[0]) {
+      reversePoly();
+    }
+  }
+  //-4 move point to point looking for intersections
+  let newPoly = [];
+  for (let i = 0; i < polygon.length; i++) {
+    const A = i === 0 ? polygon[polygon.length - 1] : polygon[i - 1];
+    const B = polygon[i];
+    newPoly.push(B);
+
+    // check for insection of all other lines
+    for (let j = 0; j < polygon.length; j++) {
+      // don't check for intersection of same line or line just before or after
+      const indexBefore = i === 0 ? polygon.length - 1 : i - 1;
+      const indexAfter = i === polygon.length - 1 ? 0 : i + 1;
+      if (j === i || j === indexBefore || j === indexAfter) continue;
+
+      const C = j === 0 ? polygon[polygon.length - 1] : polygon[j - 1];
+      const D = polygon[j];
+      const intersectPoint = lineIntersectPoint(A, B, C, D);
+
+      //-5 if interect continue clockwise around the shape
+      if (intersectPoint) {
+        newPoly.pop();
+        newPoly.push(intersectPoint);
+        const dir = directionOfPoint(A, B, D);
+
+        if (dir === 1) {
+          // if direction is left - set index to new point
+          newPoly.push(D);
+          i = j;
+        } else if (dir === -1) {
+          // if direction is right - reverse polygon and set index to new point
+          newPoly.push(C);
+          reversePoly();
+          i = polygon.length - j + 1;
+        } else {
+          throw Error('Issue untwisting polygon');
+        }
+
+        // if (newPoly.length > 5) return { dir, newPoly, polygon, i };
+        break;
+      }
+    }
+  }
+  return newPoly;
+};
+
 const roundToDecimalPlaces = (num, places) => {
   var multiplier = Math.pow(10, places);
   return Math.round(num * multiplier) / multiplier;
@@ -183,3 +298,38 @@ export const getRandomColor = () => {
   }
   return color;
 };
+
+// line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
+// Determine the intersection point of two line segments
+// Return FALSE if the lines don't intersect
+export function lineIntersectPoint(pointA, pointB, pointF, pointG) {
+  let [x1, y1] = pointA;
+  let [x2, y2] = pointB;
+  let [x3, y3] = pointF;
+  let [x4, y4] = pointG;
+  // Check if none of the lines are of length 0
+  if ((x1 === x2 && y1 === y2) || (x3 === x4 && y3 === y4)) {
+    return false;
+  }
+
+  denominator = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+
+  // Lines are parallel
+  if (denominator === 0) {
+    return false;
+  }
+
+  let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator;
+  let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator;
+
+  // is the intersection along the segments
+  if (ua < 0 || ua > 1 || ub < 0 || ub > 1) {
+    return false;
+  }
+
+  // Return a object with the x and y coordinates of the intersection
+  let x = x1 + ua * (x2 - x1);
+  let y = y1 + ua * (y2 - y1);
+
+  return [x, y];
+}

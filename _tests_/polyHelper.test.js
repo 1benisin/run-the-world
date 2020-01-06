@@ -63,17 +63,77 @@ describe('f() sanitizeInversion', () => {
 });
 
 describe('f() mergeTwistedPolygon', () => {
-  test.only('multi crossing shape', () => {
+  test('multi crossing shape', () => {
     expect(
       polyHelper.mergeTwistedPolygon(testData.selfCrossing.multiCrossing)
     ).toEqual(testData.selfCrossing.multiCrossingMerge);
   });
 
-  // test('cleanPolygon', () => {
-  //   expect(
-  //     polyHelper.cleanPolygon(testData.selfCrossing.multiCrossing)
-  //   ).toEqual();
-  // });
+  test.only('untwistPolygon', () => {
+    expect(polyHelper.untwistPolygon3(testData.selfCrossing.figure8)).toEqual([
+      [47.62547077805564, -122.35890716314317],
+      [47.62451244150106, -122.35641773790121],
+      [47.62358052652604, -122.35388807952404],
+      [47.622408308237894, -122.35200570547505],
+      [47.623046543509034, -122.35060773789881],
+      [47.62461842205012, -122.34732739627363],
+      [47.62493839613551, -122.3457458987832],
+      [47.622514362878974, -122.3455883190036],
+      [47.61998400149665, -122.34542939811946],
+      [47.61841198360306, -122.3455883190036],
+      [47.622408308237894, -122.35200570547505],
+      [47.62198195084879, -122.35293958336115],
+      [47.62041021901962, -122.35594365745784],
+      [47.6190239823868, -122.35906608402729],
+      [47.621262417655934, -122.35890716314317],
+      [47.623792717162736, -122.35922399908304],
+      [47.62493839613551, -122.35922399908304]
+    ]);
+  });
+});
+
+describe('f() directionOfPoint', () => {
+  test('point is to the left', () => {
+    expect(polyHelper.directionOfPoint([1, 1], [3, 3], [4, 5])).toEqual(-1);
+  });
+  test('point is to the right', () => {
+    expect(polyHelper.directionOfPoint([1, 1], [3, 3], [2, 1])).toEqual(1);
+  });
+  test('point is to the left', () => {
+    expect(polyHelper.directionOfPoint([1, 1], [3, 3], [4, 4])).toEqual(0);
+  });
+});
+
+describe('f() lineIntersectPoint', () => {
+  test('returns intersect point', () => {
+    const pointA = [47.63021248898915, -122.35562715679409];
+    const pointB = [47.625044601790215, -122.3520303145051];
+    const pointC = [47.62957418507829, -122.34965924173594];
+    const pointD = [47.626936382105306, -122.35732700675727];
+    expect(
+      polyHelper.lineIntersectPoint(pointA, pointB, pointC, pointD)
+    ).toEqual([47.62804106009122, -122.35411584530702]);
+  });
+
+  test('returns shared point ', () => {
+    const pointA = [47.63021248898915, -122.35562715679409];
+    const pointB = [47.62957418507829, -122.34965924173594];
+    const pointC = [47.62957418507829, -122.34965924173594];
+    const pointD = [47.626936382105306, -122.35732700675727];
+    expect(
+      polyHelper.lineIntersectPoint(pointA, pointB, pointC, pointD)
+    ).toEqual([47.62957418507829, -122.34965924173594]);
+  });
+
+  test('returns false if lines do not intersect intersect', () => {
+    const pointA = [47.63021248898915, -122.35562715679409];
+    const pointB = [47.62957418607829, -122.34965924183594];
+    const pointC = [47.62957418507829, -122.34965924173594];
+    const pointD = [47.626936382105306, -122.35732700675727];
+    expect(
+      polyHelper.lineIntersectPoint(pointA, pointB, pointC, pointD)
+    ).toEqual(false);
+  });
 });
 
 describe('f() merge', () => {

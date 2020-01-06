@@ -7,7 +7,7 @@ import {
   View,
   Alert
 } from 'react-native';
-import MapView, { Polygon } from 'react-native-maps';
+import MapView, { Polygon, Marker } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
 var geodist = require('geodist');
 
@@ -161,11 +161,11 @@ const Map = props => {
       );
 
       // TODO fix merge run with self to deal with any runs that cross over themselves. figure 8s etc.
-      runTerritoriesCoords = polyHelper.mergeTwistedPolygon(runCoords);
+      // runTerritoriesCoords = polyHelper.mergeTwistedPolygon(runCoords);
 
       // handle territory unions
       const { newTerCoords, overlappingTerrs } = mergeTerritories(
-        runTerritoriesCoords,
+        runCoords,
         territories
       );
 
@@ -254,7 +254,8 @@ const Map = props => {
           <Polygon
             key={ter.id}
             coordinates={polyHelper.pointsToCoords(ter.coords)}
-            strokeColor="#ccc"
+            strokeWidth={3}
+            strokeColor="#000"
             fillColor={
               ter.userId === 'user1'
                 ? 'rgba(0, 0, 255, 0.2)'
@@ -262,6 +263,14 @@ const Map = props => {
             }
           />
         ))}
+        <Marker
+          coordinate={{
+            latitude: 47.622408308237894,
+            longitude: -122.35200570547505
+          }}
+          title={'marker'}
+          description={'description'}
+        />
         {/* {testData.selfCrossing.multiCrossingMerge.map((ter, i) => (
           <Polygon
             key={i}
