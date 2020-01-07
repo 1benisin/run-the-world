@@ -26,15 +26,15 @@ const initialState = [
     dateModified: 1576715078146,
     runs: ['-LwQXgfP8s3ZPuxOQgOP'],
     userId: 'user3'
+  },
+  {
+    id: '-LwUN6fFACaGAHHUAkPP',
+    coords: testData.cross.horizontal,
+    dateCreated: 1576779413035,
+    dateModified: 1576779413035,
+    runs: ['-LwUN6dwI4UV3h5LzGQL'],
+    userId: 'user3'
   }
-  // {
-  //   id: '-LwUN6fFACaGAHHUAkPP',
-  //   coords: testData.selfCrossing.superCrossed,
-  //   dateCreated: 1576779413035,
-  //   dateModified: 1576779413035,
-  //   runs: ['-LwUN6dwI4UV3h5LzGQL'],
-  //   userId: 'user3'
-  // }
 ];
 
 export default (state = initialState, action) => {

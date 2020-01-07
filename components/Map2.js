@@ -63,10 +63,10 @@ const combineTerritoryRunIds = territories => {
   }, []);
 };
 
-const asyncAlertRunTooShort = async runTotalDistance =>
+const asyncAlertRunTooShort = async () =>
   new Promise(resolve => {
     Alert.alert(
-      'Run Too Short',
+      'No Conq',
       `You ran ${Math.round(
         runTotalDistance
       )} feet. You must run at least 1000 ft`,
@@ -125,43 +125,61 @@ const Map = props => {
   };
 
   const handleRunButtonPress = async () => {
-    // if currently running, stop run
+    const maxFinishDistanceFromStart_ft = 100;
+    const stopRun = () => {
+      setIsRunning(false);
+      setStartButtonTitle('Start');
+      setCurrentRunCoords([]);
+      setCurrentRunStartTime(null);
+    };
+
     if (isRunning) {
-      let runCoords = polyHelper.coordsToPoly(currentRunCoords);
+      let runPoints = polyHelper.coordsToPoly(currentRunCoords);
 
       // check if run is too short
-      let runTotalDistance = 0;
-      for (let i = 0; i < runCoords.length - 1; i++) {
-        const coord = runCoords[i];
-        const nextCoord = runCoords[i + 1];
-        runTotalDistance =
-          runTotalDistance +
-          geodist(coord, nextCoord, { exact: true, unit: 'feet' });
+      if (runPoints.length < 3) {
+        Alert.alert('Run too short', 'Not enough geo data points to log run', [
+          { text: 'OK' }
+        ]);
+        stopRun();
+        return;
       }
-      let continueRun = false;
-      if (runTotalDistance < 1000) {
-        continueRun = await asyncAlertRunTooShort(runTotalDistance);
-      }
-      if (continueRun) return;
 
       // check if start and finish of run are close enough
-      const distBetweenStartFinish = geodist(
-        runCoords[0],
-        runCoords[runCoords.length - 1],
-        { unit: 'feet' }
-      );
-      if (distBetweenStartFinish > 100) {
-        continueRun = await asyncAlertTooFarFromStart(distBetweenStartFinish);
+      let continueRun;
+      const distBetweenStartFinish = () =>
+        geodist(runPoints[0], runPoints[runPoints.length - 1], {
+          exact: true,
+          unit: 'feet'
+        });
+      if (distBetweenStartFinish() > maxFinishDistanceFromStart_ft) {
+        // check if they ran past start point
+        // look back through half the run to see if there is a point that is close enough to start point
+        // if there is slice off the tail of the run back to that point
+        for (let k = runPoints.length - 1; k > runPoints.length / 2; k--) {
+          const p = runPoints[k];
+          const distFromStart = geodist(runPoints[0], p, {
+            exact: true,
+            unit: 'feet'
+          });
+          if (distFromStart < maxFinishDistanceFromStart_ft) {
+            runPoints = runPoints.slice(0, k + 1);
+            break;
+          }
+        }
+        // if distance is still too far check if user wants to continue run
+        if (distBetweenStartFinish() > maxFinishDistanceFromStart_ft) {
+          if (await asyncAlertTooFarFromStart(distBetweenStartFinish())) return;
+        }
       }
-      if (continueRun) return;
 
       // save new run
       const savedRun = await dispatch(
-        runActions.saveRun('user1', runCoords, currentRunStartTime)
+        runActions.saveRun('user1', runPoints, currentRunStartTime)
       );
 
-      // TODO fix merge run with self to deal with any runs that cross over themselves. figure 8s etc.
-      runTerritoriesCoords = polyHelper.untwistPolygon(runCoords);
+      // untwist tangled polygon for runs that overlap themselves
+      runTerritoriesCoords = polyHelper.untwistPolygon(runPoints);
 
       // handle territory unions
       const { newTerCoords, overlappingTerrs } = mergeTerritories(
@@ -169,14 +187,12 @@ const Map = props => {
         territories
       );
 
-      // check if new territory is fully combined inside non-user territroy
-      // throw an alert
+      // check if new territory is fully contained inside non-user territroy
       const terrToCheck = territories.filter(
         ter =>
           ter.userId !== 'user1' &&
           polyHelper.polysOverlap(newTerCoords, ter.coords)
       );
-
       if (
         terrToCheck.length === 1 &&
         polyHelper.poly1FullyContainsPoly2(terrToCheck[0].coords, newTerCoords)
@@ -186,51 +202,51 @@ const Map = props => {
           "You cannot conquer an area fully contained inside someone's else territory",
           [{ text: 'OK' }]
         );
-      } else {
-        // save new territory
-        const mergedRunIds = combineTerritoryRunIds(overlappingTerrs);
-
-        const runIds = [...mergedRunIds, savedRun.id];
-        const savedTerr = await dispatch(
-          territoryActions.saveTerritory('user1', newTerCoords, runIds)
-        );
-        // delete older merged territories
-        const terrToDelete = overlappingTerrs.map(ter => ter.id);
-        dispatch(territoryActions.deleteTerritories(terrToDelete));
-
-        // handle territory subtractions
-        const subtractedTerResults = subtractTerritories(
-          newTerCoords,
-          territories
-        );
-        console.log('subtractedTerResults', subtractedTerResults);
-        for (let i = 0; i < subtractedTerResults.length; i++) {
-          const result = subtractedTerResults[i];
-          // create new territory for each region
-          for (let j = 0; j < result.newRegions.length; j++) {
-            const coords = result.newRegions[j];
-            await dispatch(
-              territoryActions.saveTerritory(
-                result.oldTer.userId,
-                coords,
-                result.oldTer.runs
-              )
-            );
-          }
-        }
-        // delete old territory
-        await dispatch(
-          territoryActions.deleteTerritories(
-            subtractedTerResults.map(result => result.oldTer.id)
-          )
-        );
-        // console.log('subtractedTerResults', subtractedTerResults);
+        stopRun();
+        return;
       }
 
-      setIsRunning(false);
-      setStartButtonTitle('Start');
-      setCurrentRunCoords([]);
-      setCurrentRunStartTime(null);
+      // save new territory
+      const mergedRunIds = combineTerritoryRunIds(overlappingTerrs);
+
+      const runIds = [...mergedRunIds, savedRun.id];
+      await dispatch(
+        territoryActions.saveTerritory('user1', newTerCoords, runIds)
+      );
+
+      // delete older merged territories
+      const terrToDelete = overlappingTerrs.map(ter => ter.id);
+      dispatch(territoryActions.deleteTerritories(terrToDelete));
+
+      // handle territory subtractions
+      const subtractedTerResults = subtractTerritories(
+        newTerCoords,
+        territories
+      );
+      console.log('subtractedTerResults', subtractedTerResults);
+      for (let i = 0; i < subtractedTerResults.length; i++) {
+        const result = subtractedTerResults[i];
+        // create new territory for each region
+        for (let j = 0; j < result.newRegions.length; j++) {
+          const coords = result.newRegions[j];
+          await dispatch(
+            territoryActions.saveTerritory(
+              result.oldTer.userId,
+              coords,
+              result.oldTer.runs
+            )
+          );
+        }
+      }
+      // delete old territory
+      await dispatch(
+        territoryActions.deleteTerritories(
+          subtractedTerResults.map(result => result.oldTer.id)
+        )
+      );
+      // console.log('subtractedTerResults', subtractedTerResults);
+
+      stopRun();
     } else {
       setCurrentRunStartTime(Date.now());
       setIsRunning(true);
