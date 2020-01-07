@@ -162,8 +162,7 @@ const Map = props => {
 
       // TODO fix merge run with self to deal with any runs that cross over themselves. figure 8s etc.
       runTerritoriesCoords = polyHelper.untwistPolygon(runCoords);
-      console.log('runCoords', runCoords);
-      console.log('runTerritoriesCoords', runTerritoriesCoords);
+
       // handle territory unions
       const { newTerCoords, overlappingTerrs } = mergeTerritories(
         runTerritoriesCoords,
@@ -266,8 +265,8 @@ const Map = props => {
         ))}
         <Marker
           coordinate={{
-            latitude: 47.634473196097055,
-            longitude: -122.36483054549288
+            latitude: 47.607861110364084,
+            longitude: -122.34542939811946
           }}
           title={'marker'}
           description={'description'}

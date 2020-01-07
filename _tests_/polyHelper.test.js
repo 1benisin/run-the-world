@@ -162,7 +162,7 @@ describe('f() flattenPolygon', () => {
 
 describe('f() untwistPolygon', () => {
   test('figure 8 shape', () => {
-    expect(polyHelper.untwistPolygon2(testData.selfCrossing.figure8)).toEqual([
+    expect(polyHelper.untwistPolygon(testData.selfCrossing.figure8)).toEqual([
       [47.62547077805564, -122.35890716314317],
       [47.62451244150106, -122.35641773790121],
       [47.62358052652604, -122.35388807952404],
@@ -184,24 +184,24 @@ describe('f() untwistPolygon', () => {
   });
 
   test('simple star shape', () => {
-    expect(
-      polyHelper.untwistPolygon2(testData.selfCrossing.simpleStar)
-    ).toEqual([
-      [47.636951372875835, -122.3601721599698],
-      [47.634805660998346, -122.36047957077123],
-      [47.634527670811245, -122.35811792314054],
-      [47.634123558657556, -122.36057729387629],
-      [47.631704621063484, -122.36092384904624],
-      [47.633622036769616, -122.36362948679673],
-      [47.63295609026599, -122.3676823452115],
-      [47.634473196097055, -122.36483054549288],
-      [47.63548604966279, -122.36625976860522],
-      [47.63516478853261, -122.36353051548]
-    ]);
+    expect(polyHelper.untwistPolygon(testData.selfCrossing.simpleStar)).toEqual(
+      [
+        [47.636951372875835, -122.3601721599698],
+        [47.634805660998346, -122.36047957077123],
+        [47.634527670811245, -122.35811792314054],
+        [47.634123558657556, -122.36057729387629],
+        [47.631704621063484, -122.36092384904624],
+        [47.633622036769616, -122.36362948679673],
+        [47.63295609026599, -122.3676823452115],
+        [47.634473196097055, -122.36483054549288],
+        [47.63548604966279, -122.36625976860522],
+        [47.63516478853261, -122.36353051548]
+      ]
+    );
   });
 
   test('star shape', () => {
-    expect(polyHelper.untwistPolygon2(testData.selfCrossing.star)).toEqual([
+    expect(polyHelper.untwistPolygon(testData.selfCrossing.star)).toEqual([
       [47.625044601790215, -122.34309755265713],
       [47.62283434984354, -122.3435716331005],
       [47.620516207885395, -122.34404738992453],
@@ -230,11 +230,9 @@ describe('f() untwistPolygon', () => {
     ]);
   });
 
-  // test.only('super crossed tangled shape', () => {
-  //   expect(
-  //     polyHelper.untwistPolygon2()
-  //   ).toEqual();
-  // });
+  test.only('crown ', () => {
+    expect(polyHelper.untwistPolygon(testData.crown_right)).toEqual();
+  });
 });
 
 describe('f() directionOfPoint', () => {
