@@ -138,6 +138,153 @@ export const directionOfPoint = (A, B, P) => {
   return 0;
 };
 
+export const flattenPolygon = p => {
+  //-1 put a new intersection point on every line that intersects
+  const polygon = [...p];
+
+  // once a line segment is checked and has no intersections we can check from there forward
+  let furthestClearedIndex = 0;
+
+  // for each line
+  for (let i = 0; i < polygon.length; i++) {
+    furthestClearedIndex = i;
+    const nextI = i === polygon.length - 1 ? 0 : i + 1;
+    const A = polygon[i];
+    const B = polygon[nextI];
+
+    // check for insection of all other lines
+    for (let j = i; j < polygon.length; j++) {
+      const nextJ = j === polygon.length - 1 ? 0 : j + 1;
+      const C = polygon[j];
+      const D = polygon[nextJ];
+
+      // if A, B, C, or D share any points - skip
+      const allPoints = [A, B, C, D].flat();
+      const uniquePoints = new Set(allPoints);
+      if (uniquePoints.size !== allPoints.length) continue;
+
+      // check for intersection
+      const intersectPoint = lineIntersectPoint(A, B, C, D);
+      if (intersectPoint) {
+        // insert intersect point into both lines of polygon
+        // if nextJ index is 0 inset point at end of polygon not at front
+        if (nextJ === 0) {
+          polygon.push(intersectPoint);
+        } else {
+          polygon.splice(nextJ, 0, intersectPoint);
+        }
+        polygon.splice(nextI, 0, intersectPoint);
+        // start at beginning again by resetting i index
+        i = furthestClearedIndex - 1;
+
+        break;
+      }
+    }
+  }
+  return polygon;
+};
+
+export const untwistPolygon2 = p => {
+  // sanity check - first and last points of polygon can not be the same point
+  // we are working with open ended polygons
+  if (p[0][0] === p[p.length - 1][0] && p[0][1] === p[p.length - 1][1])
+    throw Error('First and last points of polygon cannot be the same point');
+  // adds points at every intersection
+  let polygon = flattenPolygon(p);
+
+  // TODO return polygon;
+
+  // *-1-* find northern point
+  let northernLat = polygon[0][0];
+  let northernIndex = 0;
+  for (let i = 1; i < polygon.length; i++) {
+    const lat = polygon[i][0];
+    if (lat > northernLat) {
+      northernLat = lat;
+      northernIndex = i;
+    }
+  }
+
+  // *-2-* make northern point the start of the polygon
+  polygon = [
+    ...polygon.slice(northernIndex, polygon.length),
+    ...polygon.slice(0, northernIndex)
+  ];
+
+  // *-3-* store a reversed copy of polygon for easy switching
+  let reversedPolygon = [...polygon];
+  const firstElement = reversedPolygon.shift();
+  reversedPolygon.reverse();
+  reversedPolygon.unshift(firstElement);
+  const reversePoly = () => {
+    const temp = polygon;
+    polygon = reversedPolygon;
+    reversedPolygon = temp;
+  };
+
+  // *-4-* reverse polygon if not moving clockwise
+  const prevCoord = polygon[polygon.length - 1];
+  const nextCoord = polygon[1];
+  const northernCoord = polygon[0];
+  // if next coordinate is west and previous coordinate is east - reverse
+  if (prevCoord[1] > northernCoord[1] && nextCoord[1] < northernCoord[1]) {
+    reversePoly();
+  }
+  // if both are to the east
+  if (prevCoord[1] > northernCoord[1] && nextCoord[1] > northernCoord[1]) {
+    // and next coordinate is further south - reverse
+    if (nextCoord[0] < prevCoord[0]) {
+      reversePoly();
+    }
+  }
+  // if both are to the west
+  if (prevCoord[1] < northernCoord[1] && nextCoord[1] < northernCoord[1]) {
+    // and next coordinate is further north - reverse
+    if (nextCoord[0] > prevCoord[0]) {
+      reversePoly();
+    }
+  }
+  // TODO return polygon;
+  // *-5-* move point to point looking for matching points - these signify intersections
+  let newPoly = [];
+  for (let i = 0; i < polygon.length; i++) {
+    const A = polygon[i];
+    newPoly.push(A);
+
+    // check if point appears anywhere else in polygon
+    for (let j = 0; j < polygon.length; j++) {
+      // TODO if (newPoly.length > 11) return newPoly;
+      // skip if same point
+      if (j === i) continue;
+
+      const B = polygon[j];
+
+      // *-6-* if you find an overlapping point
+      if (A[0] === B[0] && A[1] === B[1]) {
+        const beforeA = i === 0 ? polygon[polygon.length - 1] : polygon[i - 1];
+        const beforeB = j === 0 ? polygon[polygon.length - 1] : polygon[j - 1];
+        const afterB = j === polygon.length - 1 ? polygon[0] : polygon[j + 1];
+        // find which point is in the left direction
+        const dir = directionOfPoint(beforeA, A, afterB);
+
+        if (dir === 1) {
+          // if direction is left - set index to new point
+          i = j;
+        } else if (dir === -1) {
+          // if direction is right - reverse polygon and set index to new point
+          reversePoly();
+          i = polygon.length - j;
+        } else {
+          i = j;
+          throw Error('Issue untwisting polygon');
+        }
+        break;
+      }
+    }
+  }
+  return newPoly;
+};
+
 export const untwistPolygon = polygon => {
   //-1 find northern point
   let northernLat = polygon[0][0];
