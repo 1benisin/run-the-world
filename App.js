@@ -1,17 +1,21 @@
 import React from 'react';
 import { Text, SafeAreaView, View } from 'react-native';
-import { Provider as ReduxProvider } from 'react-redux';
+import { Provider as StoreProvider } from 'react-redux';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 import NavigationRouter from './navigation/NavigationRouter';
 import store from './store/store';
+import theme from './constants/theme';
 
 import TestMap from './fake-data/TestMap';
 
 const App = () => {
   return (
-    <ReduxProvider store={store}>
-      <NavigationRouter />
-    </ReduxProvider>
+    <StoreProvider store={store}>
+      <PaperProvider theme={theme}>
+        <NavigationRouter />
+      </PaperProvider>
+    </StoreProvider>
   );
 };
 

@@ -21,12 +21,12 @@ const styles = StyleSheet.create({
   }
 });
 
-RunStartScreen.navigationOptions = {
-  headerTitle: 'Run Start',
-  headerStyle: {
-    backgroundColor: Colors.primary
-  },
-  headerTintColor: 'white'
-};
+// RunStartScreen.navigationOptions = {
+//   headerTitle: 'Run Start',
+//   headerStyle: {
+//     backgroundColor: Colors.primary
+//   },
+//   headerTintColor: 'white'
+// };
 
 export default RunStartScreen;

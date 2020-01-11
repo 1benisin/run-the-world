@@ -1,8 +1,10 @@
 import React from 'react';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+
+import { ActivityIndicator, withTheme } from 'react-native-paper';
 import { auth } from '../services/firebase';
 
-const loadingScreen = ({ navigation }) => {
+const loadingScreen = ({ navigation, theme }) => {
   auth.onAuthStateChanged(user => {
     if (user) {
       // User is logged in
@@ -14,8 +16,8 @@ const loadingScreen = ({ navigation }) => {
   });
 
   return (
-    <View>
-      <ActivityIndicator style={styles.indicator} size="large" color="#CCC" />
+    <View style={styles.indicator}>
+      <ActivityIndicator size="large" color={theme.colors.primary} />
     </View>
   );
 };
@@ -28,4 +30,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default loadingScreen;
+export default withTheme(loadingScreen);
