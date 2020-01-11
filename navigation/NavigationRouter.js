@@ -8,11 +8,11 @@ const MainNavigationRouter = createStackNavigator(
     Loading: LoadingScreen,
     Signin: SigninScreen,
     RunStart: RunStartScreen
+  },
+  {
+    initialRouteName: 'Loading',
+    headerMode: 'none'
   }
-  // {
-  //   initialRouteName: 'LoadingScreen',
-  //   headerMode: 'none'
-  // }
 );
 
 export default createAppContainer(MainNavigationRouter);

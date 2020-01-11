@@ -11,7 +11,7 @@ const loadingScreen = ({ navigation, theme }) => {
       navigation.navigate('RunStart');
     } else {
       // User is not logged in
-      // navigation.navigate('Signin');
+      navigation.navigate('Signin');
     }
   });
 

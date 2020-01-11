@@ -126,14 +126,14 @@ import Colors from '../constants/Colors';
 
 // export default memo(LoginScreen);
 
-const SigninScreen = props => {
+const SigninScreen = ({ navigation }) => {
   const onSigninHandler = () => {
     //mock login
     auth
       .createUserWithEmailAndPassword('testemail@test.com', '123456')
       .then(userObj => console.log(userObj))
       .catch(console.log);
-    props.navigation.navigate({ routeName: 'RunStart' });
+    navigation.navigate({ routeName: 'RunStart' });
   };
 
   return (
@@ -144,13 +144,13 @@ const SigninScreen = props => {
   );
 };
 
-SigninScreen.navigationOptions = {
-  headerTitle: 'RUN THE WORLD',
-  headerStyle: {
-    backgroundColor: Colors.primary
-  },
-  headerTintColor: 'white'
-};
+// SigninScreen.navigationOptions = {
+//   headerTitle: 'RUN THE WORLD',
+//   headerStyle: {
+//     backgroundColor: Colors.primary
+//   },
+//   headerTintColor: 'white'
+// };
 
 const styles = StyleSheet.create({
   screen: {
