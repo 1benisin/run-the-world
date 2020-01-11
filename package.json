@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "expo": "^35.0.0",
+    "firebase": "^7.6.1",
     "geodist": "^0.2.1",
     "polybooljs": "^1.2.0",
     "react": "16.8.3",
