@@ -21,7 +21,7 @@ const SigninScreen = props => {
       .createUserWithEmailAndPassword('testemail@test.com', '123456')
       .then(userObj => console.log(userObj))
       .catch(console.log);
-    props.navigation.navigate({ routeName: 'RunStart' });
+    navigation.navigate({ routeName: 'RunStart' });
   };
 
   return (
