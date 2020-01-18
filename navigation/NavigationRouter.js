@@ -1,16 +1,26 @@
 import { createStackNavigator } from 'react-navigation-stack';
 import { createAppContainer } from 'react-navigation';
 
-import { SigninScreen, RunStartScreen, LoadingScreen } from '../screens';
+import LoadingScreen from '../screens/LoadingScreen';
+import LoginScreen from '../screens/LoginScreen';
+import SignUpScreen from '../screens/SignUpScreen';
+import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
+import RunStartScreen from '../screens/RunStartScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const MainNavigationRouter = createStackNavigator(
   {
-    Loading: LoadingScreen,
-    Signin: SigninScreen,
-    RunStart: RunStartScreen
+    LoadingScreen,
+    LoginScreen,
+    SignUpScreen,
+    ForgotPasswordScreen,
+    RunStartScreen,
+    SettingsScreen,
+    ProfileScreen
   },
   {
-    initialRouteName: 'Loading',
+    initialRouteName: 'LoadingScreen',
     headerMode: 'none'
   }
 );
