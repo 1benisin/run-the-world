@@ -12,7 +12,7 @@ import { FAB } from 'react-native-paper';
 import Map from '../components/Map';
 import Menu from '../components/Menu';
 
-const RunStartScreen = ({ navigation }) => {
+const MapScreen = ({ navigation }) => {
   const [startButtonTitle, setStartButtonTitle] = useState('Start');
 
   const _onRunButtonPress = async () => {
@@ -192,4 +192,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default RunStartScreen;
+export default MapScreen;

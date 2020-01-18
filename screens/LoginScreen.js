@@ -50,7 +50,7 @@ const LoginScreen = ({ navigation }) => {
     if (response.error) {
       setError(response.error);
     } else {
-      navigation.navigate('RunStartScreen');
+      navigation.navigate('MapScreen');
     }
 
     setLoading(false);
