@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dimensions, StyleSheet, Text, View } from 'react-native';
-import MapView, { Polygon } from 'react-native-maps';
+import { Dimensions, StyleSheet, Alert } from 'react-native';
+import MapView, { Polygon, Marker } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
+var geodist = require('geodist');
 
-import latLngArrays from '../fake-data/fake-data';
 import * as runActions from '../store/actions/run';
 import * as territoryActions from '../store/actions/territory';
 import * as polyHelper from '../helpers/polyHelper';
 
-const Map = props => {
+const Map = ({ navigation }) => {
   const [currentRunStartTime, setCurrentRunStartTime] = useState();
   const [currentRunCoords, setCurrentRunCoords] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
@@ -16,14 +16,13 @@ const Map = props => {
 
   const dispatch = useDispatch();
 
-  const territoryCoordsList = useSelector(state => {
-    const terrInView = state.territories.territories;
-    return Object.keys(terrInView).map(key =>
-      polyHelper.pointsToCoords(terrInView[key].coords)
-    );
-  });
+  const territories = useSelector(state => state.territories);
 
-  const regionChangeHandler = async region => {
+  useEffect(() => {
+    dispatch(territoryActions.fetchTerritories());
+  }, []);
+
+  const handleRegionChange = async region => {
     dispatch(territoryActions.fetchTerritories(region));
   };
 
@@ -34,102 +33,149 @@ const Map = props => {
     }
   };
 
-  const onStartButtonPressHandler = () => {
-    if (isRunning) {
-      setIsRunning(false);
-      setStartButtonTitle('Start');
-      dispatch(
-        runActions.saveCurrentRun(
-          'user1',
-          polyHelper.coordsToPoly(currentRunCoords),
-          currentRunStartTime
-        )
-      );
-      setCurrentRunCoords([]);
-      setCurrentRunStartTime(null);
-    } else {
-      setCurrentRunStartTime(Date.now());
-      setIsRunning(true);
-      setStartButtonTitle('Stop');
-    }
-  };
-
   return (
-    <View style={styles.container}>
-      <MapView
-        style={styles.mapStyle}
-        initialRegion={{
-          latitude: 47.620937,
-          longitude: -122.35282,
-          latitudeDelta: 0.0422,
-          longitudeDelta: 0.0221
-        }}
-        onRegionChangeComplete={regionChangeHandler}
-        onPress={simulateNewRunCoordinate}
-      >
-        {territoryCoordsList.map((coords, key) => (
-          <Polygon
-            key={key}
-            coordinates={coords}
-            strokeColor="#ccc"
-            fillColor="rgba(0, 255, 255, 0.4)"
-          />
-        ))}
-        {currentRunCoords && currentRunCoords.length > 2 && (
-          // <Text>more that 2 coords in currentRun</Text>
-          <Polygon
-            coordinates={currentRunCoords}
-            strokeColor="#ccc"
-            fillColor="rgba(200, 0, 255, 0.4)"
-          />
-        )}
+    <MapView
+      style={styles.map}
+      initialRegion={{
+        latitude: 47.620937,
+        longitude: -122.35282,
+        latitudeDelta: 0.0422,
+        longitudeDelta: 0.0221
+      }}
+      onPress={simulateNewRunCoordinate}
+      showsPointsOfInterest={false}
+    >
+      {territories.map(ter => (
         <Polygon
-          coordinates={polyHelper.pointsToCoords([
-            [47.62083620708049, -122.33744647353888],
-            [47.61841198360306, -122.3413584753871],
-            [47.61963350025978, -122.34389583240937],
-            [47.62008999122647, -122.34373055398466],
-            [47.62006980455917, -122.3448021317806],
-            [47.62294055977313, -122.35076531767845],
-            [47.62853458032193, -122.34092462807892]
-          ])}
+          key={ter.id}
+          coordinates={polyHelper.pointsToCoords(ter.coords)}
+          strokeWidth={3}
+          strokeColor="#000"
+          fillColor={
+            ter.userId === 'user1'
+              ? 'rgba(0, 0, 255, 0.2)'
+              : 'rgba(255, 0, 0, 0.2)'
+          }
+        />
+      ))}
+      <Marker
+        coordinate={{
+          latitude: 47.607861110364084,
+          longitude: -122.34542939811946
+        }}
+        title={'marker'}
+        description={'description'}
+      />
+      {/* {testData.selfCrossing.multiCrossingMerge.map((ter, i) => (
+          <Polygon
+            key={i}
+            coordinates={polyHelper.pointsToCoords(ter)}
+            strokeColor="#ccc"
+            fillColor="rgba(0, 255, 0, 0.4)"
+          />
+        ))} */}
+      {currentRunCoords && currentRunCoords.length > 2 && (
+        // <Text>more that 2 coords in currentRun</Text>
+        <Polygon
+          coordinates={currentRunCoords}
           strokeColor="#ccc"
-          fillColor="rgba(200, 150, 255, 0.4)"
+          fillColor="rgba(200, 255, 255, 0.4)"
         />
-      </MapView>
-      <View style={styles.buttonContainer}>
-        <Button
-          title={startButtonTitle}
-          color="#003B00"
-          accessibilityLabel="Learn more about this purple button"
-          style={styles.button}
-          onPress={onStartButtonPressHandler}
-        />
-      </View>
-    </View>
+      )}
+    </MapView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ccc'
-    // alignItems: 'center',
-    // justifyContent: 'center'
-  },
-  mapStyle: {
-    flex: 1,
+  map: {
+    // flex: 1
+    zIndex: -50,
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height
-  },
-  button: {
-    width: '50%'
-  },
-  buttonContainer: {
-    position: 'absolute',
-    right: 10,
-    bottom: 10
   }
 });
 
 export default Map;
+
+const mergeTerritories = (runCoords, allTerritories) => {
+  // find all user territories that overlap current run
+  const overlappingTerrs = allTerritories.filter(
+    ter =>
+      ter.userId === 'user1' && polyHelper.polysOverlap(runCoords, ter.coords)
+  );
+
+  // merge all overlapping territories together
+  let newTerCoords = overlappingTerrs.reduce((acc, ter) => {
+    return polyHelper.merge(ter.coords, acc);
+  }, runCoords);
+
+  return {
+    newTerCoords,
+    overlappingTerrs
+  };
+};
+
+const subtractTerritories = (userTerCoords, allTerritories) => {
+  // find all non-user territories that overlap user territory
+  const overlappingTerrs = allTerritories.filter(
+    ter =>
+      ter.userId !== 'user1' &&
+      polyHelper.polysOverlap(ter.coords, userTerCoords)
+  );
+  // subtract user territory from all non-user territories
+  console.log('overlapping territories', overlappingTerrs);
+  return overlappingTerrs.map(ter => {
+    const alteredRegions = polyHelper.difference(ter.coords, userTerCoords);
+    return {
+      oldTer: ter,
+      newRegions: alteredRegions
+    };
+  });
+};
+
+const combineTerritoryRunIds = territories => {
+  return territories.reduce((acc, terr) => {
+    terr.runs.forEach(run => {
+      if (!acc.includes(run)) {
+        acc.push(run);
+      }
+    });
+    return acc;
+  }, []);
+};
+
+const asyncAlertRunTooShort = async () =>
+  new Promise(resolve => {
+    Alert.alert(
+      'No Conq',
+      `You ran ${Math.round(
+        runTotalDistance
+      )} feet. You must run at least 1000 ft`,
+      [
+        {
+          text: 'Continue Run',
+          onPress: () => resolve(true),
+          style: 'cancel'
+        },
+        { text: 'End Run', onPress: () => resolve(false) }
+      ],
+      { cancelable: false }
+    );
+  });
+
+const asyncAlertTooFarFromStart = async distBetweenStartFinish =>
+  new Promise(resolve => {
+    Alert.alert(
+      'Too Far From Start',
+      `Your run will be saved but no territory will be conquered. You must be less than 100 feet from starting point of your run to conquer territory. ${distBetweenStartFinish} feet away.`,
+      [
+        {
+          text: 'Continue Running',
+          onPress: () => resolve(true),
+          style: 'cancel'
+        },
+        { text: 'End Run', onPress: () => resolve(false) }
+      ],
+      { cancelable: false }
+    );
+  });
