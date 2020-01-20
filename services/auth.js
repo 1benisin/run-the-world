@@ -1,6 +1,6 @@
 // import firebase from 'firebase/app';
 // import 'firebase/auth';
-import { f, auth } from '../services/firebase';
+import { f, auth } from './firebase';
 import * as Facebook from 'expo-facebook';
 
 export const logoutUser = () => {
