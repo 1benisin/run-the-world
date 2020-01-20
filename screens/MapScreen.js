@@ -261,7 +261,6 @@ const subtractTerritories = (userTerCoords, allTerritories) => {
       polyHelper.polysOverlap(ter.coords, userTerCoords)
   );
   // subtract user territory from all non-user territories
-  console.log('overlapping territories', overlappingTerrs);
   return overlappingTerrs.map(ter => {
     const alteredRegions = polyHelper.difference(ter.coords, userTerCoords);
     return {

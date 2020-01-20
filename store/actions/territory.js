@@ -41,45 +41,12 @@ export const saveTerritory = (userId, coords, runIds) => {
 export const fetchTerritories = () => {
   // expects {northEast: LatLng, southWest: LatLng}
   return async dispatch => {
-    let territories = await fetchTerritoriesFromDB();
+    const dataSnapshot = await database.ref('territories').once('value');
+    let territories = dataSnapshot.val();
+
     territories = territories ? territories : {};
 
     dispatch({ type: FETCH_TERRITORIES, territories });
-  };
-};
-
-export const fetchTerritoriesInBounds = region => {
-  // expects {northEast: LatLng, southWest: LatLng}
-  return async dispatch => {
-    const resData = await fetchTerritoriesFromDB();
-    const mapBounds = {
-      north: region.latitude + region.latitudeDelta / 2,
-      south: region.latitude - region.latitudeDelta / 2,
-      east: region.longitude + region.longitudeDelta / 2,
-      west: region.longitude - region.longitudeDelta / 2
-    };
-
-    const terrsWithinBounds =
-      resData === null
-        ? {}
-        : Object.keys(resData).reduce((acc, key) => {
-            for (let i = 0; i < resData[key].coords.length; i++) {
-              const c = resData[key].coords[i];
-              if (
-                c.latitude < mapBounds.north &&
-                c.latitude > mapBounds.south &&
-                c.longitude > mapBounds.west &&
-                c.longitude < mapBounds.east
-              ) {
-                acc.push(resData[key]);
-                break;
-              }
-            }
-
-            return acc;
-          }, []);
-
-    dispatch({ type: FETCH_TERRITORIES, territories: terrsWithinBounds });
   };
 };
 
@@ -108,33 +75,4 @@ export const deleteTerritories = terrIds => {
     dispatch({ type: DELETE_TERRITORIES, deleteResults });
     return deleteResults;
   };
-};
-
-const deletTerritoryFromDB = async terId => {
-  try {
-    return await fetch(
-      `https://run-the-world-v1.firebaseio.com/territories/${terId}.json`,
-      {
-        method: 'DELETE'
-      }
-    );
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const fetchTerritoriesFromDB = async () => {
-  try {
-    const response = await fetch(
-      'https://run-the-world-v1.firebaseio.com/territories.json'
-    );
-
-    if (!response.ok) {
-      throw new Error('Something went wrong with fetchTerritory action');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.log(error);
-  }
 };
