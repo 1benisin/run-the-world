@@ -9,7 +9,7 @@ import TextInput from '../components/TextInput';
 import NotificationPopup from '../components/NotificationPopup';
 import { emailValidator } from '../services/utils';
 import theme from '../constants/theme';
-import { sendEmailWithPassword } from '../api/auth-api';
+import { sendEmailWithPassword } from '../services/auth';
 
 const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState({ value: '', error: '' });

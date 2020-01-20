@@ -20,7 +20,7 @@ import Background from '../components/Background';
 import Logo from '../components/Logo';
 import NotificationPopup from '../components/NotificationPopup';
 import { emailValidator, passwordValidator } from '../services/utils';
-import { loginWithEmail, loginWithFacebook } from '../api/auth-api';
+import { loginWithEmail, loginWithFacebook } from '../services/auth';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState({ value: '', error: '' });

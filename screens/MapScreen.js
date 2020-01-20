@@ -5,27 +5,41 @@ import {
   View,
   SafeAreaView,
   Platform,
-  StatusBar
+  StatusBar,
+  Alert
 } from 'react-native';
 import { FAB } from 'react-native-paper';
+import { useSelector, useDispatch } from 'react-redux';
+var geodist = require('geodist');
 
+import * as polyHelper from '../services/polygons';
 import Map from '../components/Map';
 import Menu from '../components/Menu';
+import * as runActions from '../store/actions/run';
+import * as territoryActions from '../store/actions/territory';
 
 const MapScreen = ({ navigation }) => {
+  const [currentRunStartTime, setCurrentRunStartTime] = useState();
+  const [currentRunCoords, setCurrentRunCoords] = useState([]);
+  const [isRunning, setIsRunning] = useState(false);
   const [startButtonTitle, setStartButtonTitle] = useState('Start');
+
+  const dispatch = useDispatch();
+
+  const territories = useSelector(state => state.territories);
+
+  const stopRun = () => {
+    setIsRunning(false);
+    setStartButtonTitle('Start');
+    setCurrentRunCoords([]);
+    setCurrentRunStartTime(null);
+  };
 
   const _onRunButtonPress = async () => {
     const maxFinishDistanceFromStart_ft = 100;
-    const stopRun = () => {
-      setIsRunning(false);
-      setStartButtonTitle('Start');
-      setCurrentRunCoords([]);
-      setCurrentRunStartTime(null);
-    };
 
     if (isRunning) {
-      let runPoints = polyHelper.coordsToPoly(currentRunCoords);
+      let runPoints = polyHelper.coordsToPoints(currentRunCoords);
 
       // check if run is too short
       if (runPoints.length < 3) {
@@ -145,51 +159,114 @@ const MapScreen = ({ navigation }) => {
     }
   };
 
+  const _onDebugMapTouch = coord => {
+    console.log(coord);
+    if (isRunning) {
+      const newCoord = [...currentRunCoords, coord];
+      setCurrentRunCoords(newCoord);
+    }
+  };
+
   return (
     <View style={styles.screen}>
-      {/* <Map /> */}
+      <Map
+        onDebugMapTouch={_onDebugMapTouch}
+        currentRunCoords={currentRunCoords}
+      />
 
-      <SafeAreaView style={styles.mapOverlay}>
-        <View style={styles.headerContainer}>
-          <Menu style={styles.menu} navigation={navigation} />
-        </View>
-
-        <View style={styles.footerContainer}>
-          <FAB
-            label={startButtonTitle}
-            icon="run"
-            onPress={_onRunButtonPress}
-          />
-        </View>
+      <SafeAreaView style={styles.SafeAreaView}>
+        <Menu style={styles.menu} navigation={navigation} />
       </SafeAreaView>
+
+      <FAB
+        label={startButtonTitle}
+        icon="run"
+        style={styles.footerContainer}
+        onPress={_onRunButtonPress}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   screen: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
+    ...StyleSheet.absoluteFill
   },
-  mapOverlay: {
-    ...StyleSheet.absoluteFill,
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 0,
+  SafeAreaView: {
     flex: 1,
-    alignItems: 'center'
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    width: '95%',
-    justifyContent: 'flex-end'
+    position: 'absolute',
+    right: 10,
+    top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 0
   },
   footerContainer: {
     position: 'absolute',
-    bottom: 20,
-    width: '95%',
-    flexDirection: 'row',
-    justifyContent: 'center'
+    alignSelf: 'center',
+    bottom: 20
   }
 });
 
 export default MapScreen;
+
+const asyncAlertTooFarFromStart = async distBetweenStartFinish =>
+  new Promise(resolve => {
+    Alert.alert(
+      'Too Far From Start',
+      `Your run will be saved but no territory will be conquered. You must be less than 100 feet from starting point of your run to conquer territory. ${distBetweenStartFinish} feet away.`,
+      [
+        {
+          text: 'Continue Running',
+          onPress: () => resolve(true),
+          style: 'cancel'
+        },
+        { text: 'End Run', onPress: () => resolve(false) }
+      ],
+      { cancelable: false }
+    );
+  });
+
+const mergeTerritories = (runCoords, allTerritories) => {
+  // find all user territories that overlap current run
+  const overlappingTerrs = allTerritories.filter(
+    ter =>
+      ter.userId === 'user1' && polyHelper.polysOverlap(runCoords, ter.coords)
+  );
+
+  // merge all overlapping territories together
+  let newTerCoords = overlappingTerrs.reduce((acc, ter) => {
+    return polyHelper.merge(ter.coords, acc);
+  }, runCoords);
+
+  return {
+    newTerCoords,
+    overlappingTerrs
+  };
+};
+
+const combineTerritoryRunIds = territories => {
+  return territories.reduce((acc, terr) => {
+    terr.runs.forEach(run => {
+      if (!acc.includes(run)) {
+        acc.push(run);
+      }
+    });
+    return acc;
+  }, []);
+};
+
+const subtractTerritories = (userTerCoords, allTerritories) => {
+  // find all non-user territories that overlap user territory
+  const overlappingTerrs = allTerritories.filter(
+    ter =>
+      ter.userId !== 'user1' &&
+      polyHelper.polysOverlap(ter.coords, userTerCoords)
+  );
+  // subtract user territory from all non-user territories
+  console.log('overlapping territories', overlappingTerrs);
+  return overlappingTerrs.map(ter => {
+    const alteredRegions = polyHelper.difference(ter.coords, userTerCoords);
+    return {
+      oldTer: ter,
+      newRegions: alteredRegions
+    };
+  });
+};
