@@ -4,6 +4,8 @@ export const SAVE_TERRITORY_SUCCESS = 'SAVE_TERRITORY_SUCCESS';
 export const SAVE_TERRITORY_FAILURE = 'SAVE_TERRITORY_FAILURE';
 export const DELETE_TERRITORIES = 'DELETE_TERRITORIES';
 
+import { database } from '../../services/firebase';
+
 export const saveTerritory = (userId, coords, runIds) => {
   // Redux Thunk will inject dispatch here:
   return async dispatch => {
@@ -11,7 +13,6 @@ export const saveTerritory = (userId, coords, runIds) => {
     dispatch({ type: SAVE_TERRITORY_REQUEST });
 
     try {
-      // Perform the actual API call
       const time = Date.now();
       const newTerritory = {
         userId,
@@ -20,23 +21,11 @@ export const saveTerritory = (userId, coords, runIds) => {
         dateModified: time,
         runs: runIds
       };
-      const response = await fetch(
-        'https://run-the-world-v1.firebaseio.com/territories.json',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(newTerritory)
-        }
-      );
 
-      if (!response.ok) {
-        throw new Error('Something went wrong with saveRun action');
-      }
+      // Perform the actual API call
+      const newTerrRef = await database.ref('territories').push(newTerritory);
+      newTerritory.id = newTerrRef.key;
 
-      const resData = await response.json();
-      newTerritory.id = resData.name;
       // Reducers may handle this to show the data and reset isFetching
       dispatch({ type: SAVE_TERRITORY_SUCCESS, newTerritory });
       return newTerritory;

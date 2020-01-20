@@ -13,6 +13,8 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
 
   const territories = useSelector(state => state.territories);
 
+  console.log('dkc3', 'HHHH', territories);
+
   useEffect(() => {
     dispatch(territoryActions.fetchTerritories());
   }, []);

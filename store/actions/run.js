@@ -19,10 +19,8 @@ export const saveRun = (userId, coords, startTime) => {
         endTime: Date.now()
       };
       // Perform the Firebase API call
-      database
-        .ref('runs')
-        .push(newRun)
-        .then(ref => (newRun.id = ref.key));
+      const newRunRef = await database.ref('runs').push(newRun);
+      newRun.id = newRunRef.key;
 
       // Reducers may handle this to show the data and reset isFetching
       dispatch({ type: SAVE_RUN_SUCCESS, newRun });

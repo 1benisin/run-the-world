@@ -115,6 +115,7 @@ const MapScreen = ({ navigation }) => {
       const mergedRunIds = combineTerritoryRunIds(overlappingTerrs);
 
       const runIds = [...mergedRunIds, savedRun.id];
+
       await dispatch(
         territoryActions.saveTerritory('user1', newTerCoords, runIds)
       );
@@ -128,7 +129,7 @@ const MapScreen = ({ navigation }) => {
         newTerCoords,
         territories
       );
-      console.log('subtractedTerResults', subtractedTerResults);
+
       for (let i = 0; i < subtractedTerResults.length; i++) {
         const result = subtractedTerResults[i];
         // create new territory for each region
@@ -160,7 +161,6 @@ const MapScreen = ({ navigation }) => {
   };
 
   const _onDebugMapTouch = coord => {
-    console.log(coord);
     if (isRunning) {
       const newCoord = [...currentRunCoords, coord];
       setCurrentRunCoords(newCoord);
