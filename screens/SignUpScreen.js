@@ -12,7 +12,7 @@ import {
   passwordValidator,
   nameValidator
 } from '../services/utils';
-import { signUpUser } from '../api/auth-api';
+import { signUpUser } from '../services/auth';
 import NotificationPopup from '../components/NotificationPopup';
 
 const RegisterScreen = ({ navigation }) => {

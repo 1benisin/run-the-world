@@ -5,7 +5,7 @@ import LoadingScreen from '../screens/LoadingScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignUpScreen from '../screens/SignUpScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
-import RunStartScreen from '../screens/RunStartScreen';
+import MapScreen from '../screens/MapScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
@@ -15,7 +15,7 @@ const MainNavigationRouter = createStackNavigator(
     LoginScreen,
     SignUpScreen,
     ForgotPasswordScreen,
-    RunStartScreen,
+    MapScreen,
     SettingsScreen,
     ProfileScreen
   },

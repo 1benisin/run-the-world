@@ -8,7 +8,7 @@ import {
   FAB
 } from 'react-native-paper';
 
-import { logoutUser } from '../api/auth-api';
+import { logoutUser } from '../services/auth';
 
 const Menu = ({ navigation }) => {
   const [visible, setVisible] = useState(false);

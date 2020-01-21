@@ -8,7 +8,7 @@ const LoadingScreen = ({ navigation, theme }) => {
   auth.onAuthStateChanged(user => {
     if (user) {
       // User is logged in
-      navigation.navigate('RunStartScreen');
+      navigation.navigate('MapScreen');
     } else {
       // User is not logged in
       navigation.navigate('LoginScreen');
