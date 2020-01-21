@@ -6,7 +6,14 @@ import { auth } from '../../services/firebase';
 export const logInUser = user => {
   return async dispatch => {
     const { displayName, email, photoURL, uid } = user;
-    const userData = { displayName, email, photoURL, uid };
+    const userData = {
+      displayName,
+      email,
+      photoURL,
+      uid,
+      color: '#3366ff',
+      totalDistance: 0
+    };
 
     dispatch({ type: LOGIN_USER, userData });
   };
