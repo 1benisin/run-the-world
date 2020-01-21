@@ -7,34 +7,27 @@ import Territory from '../../models/territory';
 import * as testData from '../../fake-data/fake-data';
 
 const initialState = [
-  {
-    id: '-LwQXgfP8s3ZPuxOQgNW',
-    coords: [
-      [47.607861110364084, -122.34542939811946],
-      [47.60532845743632, -122.34653681516646],
-      [47.60532845743632, -122.34918077646614],
-      [47.60436952559971, -122.34981682151556],
-      [47.60532845743632, -122.35024223879897],
-      [47.60532845743632, -122.35293958336115],
-      [47.60690086867129, -122.35278200358152],
-      [47.60722095119431, -122.35108181834222],
-      [47.60532845743632, -122.35024223879897],
-      [47.60532845743632, -122.34918077646614],
-      [47.607647046711385, -122.34764289110899]
-    ],
-    dateCreated: 1576715078146,
-    dateModified: 1576715078146,
-    runs: ['-LwQXgfP8s3ZPuxOQgOP'],
-    userId: 'user3'
-  },
-  {
-    id: '-LwUN6fFACaGAHHUAkPP',
-    coords: testData.cross.horizontal,
-    dateCreated: 1576779413035,
-    dateModified: 1576779413035,
-    runs: ['-LwUN6dwI4UV3h5LzGQL'],
-    userId: 'user3'
-  }
+  // {
+  //   id: '-LwQXgfP8s3ZPuxOQgNW',
+  //   coords: [
+  //     [47.61955778049896, -122.3398172110319],
+  //     [47.61649322606147, -122.34151739627123],
+  //     [47.616909466234596, -122.34720457999472],
+  //     [47.62007969289885, -122.34579954210191]
+  //   ],
+  //   dateCreated: 1576715078146,
+  //   dateModified: 1576715078146,
+  //   runs: ['-LwQXgfP8s3ZPuxOQgOP'],
+  //   userId: 'user3'
+  // },
+  // {
+  //   id: '-LwUN6fFACaGAHHUAkPP',
+  //   coords: testData.cross.horizontal,
+  //   dateCreated: 1576779413035,
+  //   dateModified: 1576779413035,
+  //   runs: ['-LwUN6dwI4UV3h5LzGQL'],
+  //   userId: 'user3'
+  // }
 ];
 
 export default (state = initialState, action) => {
