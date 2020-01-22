@@ -13,6 +13,7 @@ const LoadingScreen = ({ navigation, theme }) => {
     if (user) {
       // User is logged in
       dispatch(userActions.logInUser(user));
+
       navigation.navigate('MapScreen');
     } else {
       // User is not logged in

@@ -1,21 +1,45 @@
 export const LOGIN_USER = 'LOGIN_USER';
 export const LOGOUT_USER = 'LOGOUT_USER';
 
-import { auth } from '../../services/firebase';
+import { auth, database } from '../../services/firebase';
+import theme from '../../constants/theme';
 
-export const logInUser = user => {
+export const logInUser = authUserData => {
   return async dispatch => {
-    const { displayName, email, photoURL, uid } = user;
-    const userData = {
-      displayName,
-      email,
-      photoURL,
-      uid,
-      color: '#3366ff',
-      totalDistance: 0
-    };
+    // destructure authUserData object
+    const { displayName, email, photoURL, uid } = authUserData;
 
-    dispatch({ type: LOGIN_USER, userData });
+    // get user info form database
+    const userRef = database.ref('users/' + uid);
+    const dataSnapshot = await userRef.once('value');
+    let user = dataSnapshot.val();
+
+    // if user doesn't exist create user
+    if (!user) {
+      user = {
+        ...user,
+        name: displayName,
+        email,
+        photoURL: photoURL
+          ? photoURL
+          : 'http://cdn.onlinewebfonts.com/svg/img_184513.png',
+        uid,
+        color: theme.colors.primary,
+        totalDistance: 0,
+        userName: 'Anonymous User'
+      };
+
+      userRef
+        .set(user)
+        .then(function() {
+          console.log(`RunTheWorld: New user ${uid} added to database`);
+        })
+        .catch(function(error) {
+          throw Error(`RunTheWorld: adding new user ${uid} to database failed`);
+        });
+    }
+
+    dispatch({ type: LOGIN_USER, user });
   };
 };
 

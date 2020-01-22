@@ -1,45 +1,58 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { Avatar, Title, Subheading, Text } from 'react-native-paper';
 import { useSelector } from 'react-redux';
 
 import BackButton from '../components/BackButton';
+import theme from '../constants/theme';
 
-const ProfileScreen = ({ navigation, theme }) => {
+const ProfileScreen = ({ navigation }) => {
   let photoURL = useSelector(state => state.user.photoURL);
-  let displayName = useSelector(state => state.user.displayName);
+  let name = useSelector(state => state.user.name);
+  let userName = useSelector(state => state.user.userName);
   let color = useSelector(state => state.user.color);
   let totalDistance = useSelector(state => state.user.totalDistance);
 
-  photoURL = photoURL
-    ? { uri: photoURL }
-    : {
-        uri:
-          'https://icons-for-free.com/iconfiles/png/512/boy+character+man+school+boy+user+icon-1320085976501561317.png'
-      };
-
   return (
-    <View style={{ ...styles.screen, backgroundColor: color }}>
-      <BackButton navigation={navigation} />
+    <View style={styles.container}>
+      <View style={{ ...styles.header, backgroundColor: color }}>
+        <SafeAreaView style={styles.headerContent}>
+          <Title>Profile</Title>
 
-      <Title>Profile</Title>
+          <Avatar.Image
+            source={{ uri: photoURL }}
+            style={{ backgroundColor: theme.colors.background }}
+          />
 
-      <Avatar.Image source={photoURL} />
+          <Subheading>{name}</Subheading>
+        </SafeAreaView>
+      </View>
 
-      <Subheading>{displayName}</Subheading>
+      <Subheading>User Name: {userName}</Subheading>
 
       <Text>Color: {color}</Text>
 
       <Text>Total Distance Run: {totalDistance} </Text>
+
+      <BackButton navigation={navigation} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    justifyContent: 'center',
+    // justifyContent: 'center',
     alignItems: 'center'
+  },
+  header: {
+    width: '100%',
+    height: '30%'
+  },
+  headerContent: {
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 });
 
