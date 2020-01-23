@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 
 import { ActivityIndicator, withTheme } from 'react-native-paper';
 import { auth } from '../services/firebase';
-import * as userActions from '../store/actions/user';
+import * as userActions from '../store/user/actions';
 
 const LoadingScreen = ({ navigation, theme }) => {
   const dispatch = useDispatch();

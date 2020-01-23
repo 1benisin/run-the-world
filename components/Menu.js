@@ -10,7 +10,7 @@ import {
 import { Menu as PaperMenu, Divider, FAB } from 'react-native-paper';
 import { useDispatch } from 'react-redux';
 
-import * as userActions from '../store/actions/user';
+import * as userActions from '../store/user/actions';
 
 const Menu = ({ navigation }) => {
   const [visible, setVisible] = useState(false);

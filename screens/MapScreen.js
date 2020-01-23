@@ -15,8 +15,8 @@ var geodist = require('geodist');
 import * as polyHelper from '../services/polygons';
 import Map from '../components/Map';
 import Menu from '../components/Menu';
-import * as runActions from '../store/actions/run';
-import * as territoryActions from '../store/actions/territory';
+import * as runActions from '../store/run/actions';
+import * as territoryActions from '../store/territory/actions';
 import { auth } from '../services/firebase';
 
 const MapScreen = ({ navigation }) => {

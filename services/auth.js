@@ -1,7 +1,7 @@
 import * as Facebook from 'expo-facebook';
 
 import { f, auth } from './firebase';
-import * as userActions from '../store/actions/user';
+import * as userActions from '../store/user/actions';
 
 export const signUpUser = async ({ name, email, password }) => {
   try {

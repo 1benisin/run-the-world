@@ -2,7 +2,7 @@ import {
   SAVE_RUN_REQUEST,
   SAVE_RUN_SUCCESS,
   SAVE_RUN_FAILURE
-} from '../actions/run';
+} from '../run/actions';
 import Run from '../../models/run';
 
 const initialState = [];
