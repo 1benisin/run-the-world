@@ -180,9 +180,7 @@ const MapScreen = ({ navigation }) => {
         currentRunCoords={currentRunCoords}
       />
 
-      <SafeAreaView style={styles.SafeAreaView}>
-        <Menu style={styles.menu} navigation={navigation} />
-      </SafeAreaView>
+      <Menu navigation={navigation} />
 
       <FAB
         label={startButtonTitle}
@@ -197,12 +195,6 @@ const MapScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   screen: {
     ...StyleSheet.absoluteFill
-  },
-  SafeAreaView: {
-    flex: 1,
-    position: 'absolute',
-    right: 10,
-    top: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 0
   },
   footerContainer: {
     position: 'absolute',

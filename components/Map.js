@@ -56,7 +56,7 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
         <Polygon
           coordinates={currentRunCoords}
           strokeColor="#ccc"
-          fillColor="rgba(200, 255, 255, 0.4)"
+          fillColor="rgb(200, 255, 255)"
         />
       )}
     </MapView>
