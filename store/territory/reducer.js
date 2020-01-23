@@ -2,7 +2,7 @@ import {
   FETCH_TERRITORIES,
   SAVE_TERRITORY_SUCCESS,
   DELETE_TERRITORIES
-} from '../actions/territory';
+} from '../territory/actions';
 import Territory from '../../models/territory';
 import * as testData from '../../fake-data/fake-data';
 

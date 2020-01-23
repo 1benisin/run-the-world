@@ -4,8 +4,8 @@ import MapView, { Polygon, Marker } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
 var geodist = require('geodist');
 
-import * as runActions from '../store/actions/run';
-import * as territoryActions from '../store/actions/territory';
+import * as runActions from '../store/run/actions';
+import * as territoryActions from '../store/territory/actions';
 import * as polyHelper from '../helpers/polyHelper';
 
 const Map = ({ navigation }) => {
