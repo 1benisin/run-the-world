@@ -1,11 +1,7 @@
-// import firebase from 'firebase/app';
-// import 'firebase/auth';
-import { f, auth } from '../services/firebase';
 import * as Facebook from 'expo-facebook';
 
-export const logoutUser = () => {
-  auth.signOut();
-};
+import { f, auth } from './firebase';
+import * as userActions from '../store/actions/user';
 
 export const signUpUser = async ({ name, email, password }) => {
   try {
@@ -101,7 +97,7 @@ export const loginWithFacebook = async () => {
         permissions: ['email', 'public_profile']
       }
     );
-    console.log(facebookUser);
+    console.log('facebookUser', facebookUser);
 
     const { type, token } = facebookUser;
 

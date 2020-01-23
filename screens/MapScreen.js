@@ -17,6 +17,7 @@ import Map from '../components/Map';
 import Menu from '../components/Menu';
 import * as runActions from '../store/actions/run';
 import * as territoryActions from '../store/actions/territory';
+import { auth } from '../services/firebase';
 
 const MapScreen = ({ navigation }) => {
   const [currentRunStartTime, setCurrentRunStartTime] = useState();
@@ -27,6 +28,7 @@ const MapScreen = ({ navigation }) => {
   const dispatch = useDispatch();
 
   const territories = useSelector(state => state.territories);
+  const user = useSelector(state => state.user);
 
   const stopRun = () => {
     setIsRunning(false);
@@ -80,7 +82,7 @@ const MapScreen = ({ navigation }) => {
 
       // save new run
       const savedRun = await dispatch(
-        runActions.saveRun('user1', runPoints, currentRunStartTime)
+        runActions.saveRun(auth.currentUser.uid, runPoints, currentRunStartTime)
       );
 
       // untwist tangled polygon for runs that overlap themselves
@@ -95,7 +97,7 @@ const MapScreen = ({ navigation }) => {
       // check if new territory is fully contained inside non-user territroy
       const terrToCheck = territories.filter(
         ter =>
-          ter.userId !== 'user1' &&
+          ter.userId !== auth.currentUser.uid &&
           polyHelper.polysOverlap(newTerCoords, ter.coords)
       );
       if (
@@ -115,8 +117,13 @@ const MapScreen = ({ navigation }) => {
       const mergedRunIds = combineTerritoryRunIds(overlappingTerrs);
 
       const runIds = [...mergedRunIds, savedRun.id];
+
       await dispatch(
-        territoryActions.saveTerritory('user1', newTerCoords, runIds)
+        territoryActions.saveTerritory(
+          auth.currentUser.uid,
+          newTerCoords,
+          runIds
+        )
       );
 
       // delete older merged territories
@@ -128,7 +135,7 @@ const MapScreen = ({ navigation }) => {
         newTerCoords,
         territories
       );
-      console.log('subtractedTerResults', subtractedTerResults);
+
       for (let i = 0; i < subtractedTerResults.length; i++) {
         const result = subtractedTerResults[i];
         // create new territory for each region
@@ -160,7 +167,6 @@ const MapScreen = ({ navigation }) => {
   };
 
   const _onDebugMapTouch = coord => {
-    console.log(coord);
     if (isRunning) {
       const newCoord = [...currentRunCoords, coord];
       setCurrentRunCoords(newCoord);
@@ -228,7 +234,8 @@ const mergeTerritories = (runCoords, allTerritories) => {
   // find all user territories that overlap current run
   const overlappingTerrs = allTerritories.filter(
     ter =>
-      ter.userId === 'user1' && polyHelper.polysOverlap(runCoords, ter.coords)
+      ter.userId === auth.currentUser.uid &&
+      polyHelper.polysOverlap(runCoords, ter.coords)
   );
 
   // merge all overlapping territories together
@@ -257,11 +264,10 @@ const subtractTerritories = (userTerCoords, allTerritories) => {
   // find all non-user territories that overlap user territory
   const overlappingTerrs = allTerritories.filter(
     ter =>
-      ter.userId !== 'user1' &&
+      ter.userId !== auth.currentUser.uid &&
       polyHelper.polysOverlap(ter.coords, userTerCoords)
   );
   // subtract user territory from all non-user territories
-  console.log('overlapping territories', overlappingTerrs);
   return overlappingTerrs.map(ter => {
     const alteredRegions = polyHelper.difference(ter.coords, userTerCoords);
     return {

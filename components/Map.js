@@ -7,11 +7,13 @@ var geodist = require('geodist');
 import * as runActions from '../store/actions/run';
 import * as territoryActions from '../store/actions/territory';
 import * as polyHelper from '../helpers/polyHelper';
+import { auth } from '../services/firebase';
 
 const Map = ({ onDebugMapTouch, currentRunCoords }) => {
   const dispatch = useDispatch();
 
   const territories = useSelector(state => state.territories);
+  const user = useSelector(state => state.user);
 
   useEffect(() => {
     dispatch(territoryActions.fetchTerritories());
@@ -44,9 +46,9 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
           strokeWidth={3}
           strokeColor="#000"
           fillColor={
-            ter.userId === 'user1'
-              ? 'rgba(0, 0, 255, 0.2)'
-              : 'rgba(255, 0, 0, 0.2)'
+            ter.userId === user.uid
+              ? 'rgba(100, 100, 255, 0.4)'
+              : 'rgba(255, 20, 0, 0.2)'
           }
         />
       ))}
