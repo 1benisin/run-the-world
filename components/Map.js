@@ -4,6 +4,7 @@ import MapView, { Polygon, Marker } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
 var geodist = require('geodist');
 
+import CurrentRun from './CurrentRun';
 import * as runActions from '../store/run/actions';
 import * as territoryActions from '../store/territory/actions';
 import * as polyHelper from '../helpers/polyHelper';
@@ -24,7 +25,8 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
   };
 
   const simulateNewRunCoordinate = e => {
-    onDebugMapTouch(e.nativeEvent.coordinate);
+    // onDebugMapTouch(e.nativeEvent.coordinate);
+    dispatch(runActions.addCoord(e.nativeEvent.coordinate));
   };
 
   return (
@@ -52,13 +54,14 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
           }
         />
       ))}
-      {currentRunCoords && currentRunCoords.length > 2 && (
+      {/* {currentRunCoords && currentRunCoords.length > 2 && (
         <Polygon
           coordinates={currentRunCoords}
           strokeColor="#ccc"
           fillColor="rgb(200, 255, 255)"
         />
-      )}
+      )} */}
+      <CurrentRun />
     </MapView>
   );
 };

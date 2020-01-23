@@ -22,17 +22,15 @@ import { auth } from '../services/firebase';
 const MapScreen = ({ navigation }) => {
   const [currentRunStartTime, setCurrentRunStartTime] = useState();
   const [currentRunCoords, setCurrentRunCoords] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [startButtonTitle, setStartButtonTitle] = useState('Start');
 
   const dispatch = useDispatch();
 
   const territories = useSelector(state => state.territories);
   const user = useSelector(state => state.user);
+  const isRunning = useSelector(state => state.runs.isRunning);
 
   const stopRun = () => {
-    setIsRunning(false);
-    setStartButtonTitle('Start');
+    dispatch(runActions.stopRun());
     setCurrentRunCoords([]);
     setCurrentRunStartTime(null);
   };
@@ -41,6 +39,8 @@ const MapScreen = ({ navigation }) => {
     const maxFinishDistanceFromStart_ft = 100;
 
     if (isRunning) {
+      stopRun();
+      return;
       let runPoints = polyHelper.coordsToPoints(currentRunCoords);
 
       // check if run is too short
@@ -160,9 +160,9 @@ const MapScreen = ({ navigation }) => {
 
       stopRun();
     } else {
-      setCurrentRunStartTime(Date.now());
-      setIsRunning(true);
-      setStartButtonTitle('Stop');
+      dispatch(runActions.startRun());
+      // setCurrentRunStartTime(Date.now());
+      // setIsRunning(true);
     }
   };
 
@@ -183,7 +183,7 @@ const MapScreen = ({ navigation }) => {
       <Menu navigation={navigation} />
 
       <FAB
-        label={startButtonTitle}
+        label={isRunning ? 'STOP' : 'START'}
         icon="run"
         style={styles.footerContainer}
         onPress={_onRunButtonPress}
