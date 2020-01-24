@@ -39,7 +39,8 @@ const MapScreen = ({ navigation }) => {
     const maxFinishDistanceFromStart_ft = 100;
 
     if (isRunning) {
-      stopRun();
+      const response = await dispatch(runActions.stopRun());
+      console.log('SC@D', response);
       return;
       let runPoints = polyHelper.coordsToPoints(currentRunCoords);
 

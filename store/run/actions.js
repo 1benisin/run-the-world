@@ -16,6 +16,7 @@ export const RUN_ADD_COORD_REQUEST = 'RUN_ADD_COORD_REQUEST';
 export const RUN_ADD_COORD_SUCCESS = 'RUN_ADD_COORD_SUCCESS';
 export const RUN_ADD_COORD_FAILURE = 'RUN_ADD_COORD_FAILURE';
 
+import * as RunEffects from './effects';
 import { database } from '../../services/firebase';
 
 export const addCoord = coord => {
@@ -36,11 +37,28 @@ export const startRun = () => {
   };
 };
 
-export const stopRun = () => {
-  return async dispatch => {
+export const stopRun = (ignoreErrors = []) => {
+  return async (dispatch, getState) => {
     dispatch({ type: RUN_STOP_REQUEST });
 
-    dispatch({ type: RUN_STOP_SUCCESS, isRunning: false, stopTime: Date() });
+    const stopTime = Date();
+
+    // Effect - convert coords to points
+    const coords = getState().runs.coordinates;
+    let runPoints = RunEffects.convertCoordsToPoints(coords);
+
+    // Effect - check if run is too short
+    runPoints = RunEffects.checkTooShort(runPoints);
+    if (runPoints.error) return { error: runPoints.error };
+
+    // Effect - check if start and finish of run are close enough
+    runPoints = RunEffects.checkStartFinishDistance(runPoints);
+    if (runPoints.error) return { error: runPoints.error };
+    return runPoints;
+
+    // Effect - save new run
+    //TODO
+    dispatch({ type: RUN_STOP_SUCCESS, isRunning: false, stopTime });
     return {};
   };
 };

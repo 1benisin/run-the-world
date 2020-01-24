@@ -25,7 +25,6 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
   };
 
   const simulateNewRunCoordinate = e => {
-    // onDebugMapTouch(e.nativeEvent.coordinate);
     dispatch(runActions.addCoord(e.nativeEvent.coordinate));
   };
 
@@ -54,13 +53,6 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
           }
         />
       ))}
-      {/* {currentRunCoords && currentRunCoords.length > 2 && (
-        <Polygon
-          coordinates={currentRunCoords}
-          strokeColor="#ccc"
-          fillColor="rgb(200, 255, 255)"
-        />
-      )} */}
       <CurrentRun />
     </MapView>
   );
