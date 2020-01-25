@@ -18,6 +18,7 @@ export const RUN_ADD_COORD_FAILURE = 'RUN_ADD_COORD_FAILURE';
 
 import * as RunEffects from './effects';
 import { database } from '../../services/firebase';
+import Run from './model';
 
 export const addCoord = coord => {
   return async dispatch => {
@@ -32,7 +33,11 @@ export const startRun = () => {
   return async dispatch => {
     dispatch({ type: RUN_START_REQUEST });
 
-    dispatch({ type: RUN_START_SUCCESS, isRunning: true, startTime: Date() });
+    dispatch({
+      type: RUN_START_SUCCESS,
+      isRunning: true,
+      startTime: Date.now()
+    });
     return {};
   };
 };
@@ -41,25 +46,34 @@ export const stopRun = (ignoreErrors = []) => {
   return async (dispatch, getState) => {
     dispatch({ type: RUN_STOP_REQUEST });
 
-    const stopTime = Date();
+    const endTime = Date.now();
+    const { coordinates, startTime } = getState().runs;
+    const userId = getState().user.uid;
 
     // Effect - convert coords to points
-    const coords = getState().runs.coordinates;
-    let runPoints = RunEffects.convertCoordsToPoints(coords);
+    let runPoints = RunEffects.convertCoordsToPoints(coordinates);
 
     // Effect - check if run is too short
     runPoints = RunEffects.checkTooShort(runPoints);
-    if (runPoints.error) return { error: runPoints.error };
+    if (runPoints.error) {
+      dispatch({ type: RUN_STOP_FAILURE });
+      return { error: runPoints.error };
+    }
 
     // Effect - check if start and finish of run are close enough
-    runPoints = RunEffects.checkStartFinishDistance(runPoints);
-    if (runPoints.error) return { error: runPoints.error };
-    return runPoints;
+    if (!ignoreErrors.includes(Run.TOO_FAR_FROM_START_ERROR)) {
+      runPoints = RunEffects.checkStartFinishDistance(runPoints);
+      if (runPoints.error) return { error: runPoints.error };
+    }
 
     // Effect - save new run
-    //TODO
-    dispatch({ type: RUN_STOP_SUCCESS, isRunning: false, stopTime });
-    return {};
+    let newRun = new Run(null, userId, coordinates, startTime, endTime);
+    newRun = await RunEffects.saveRun(newRun);
+    if (newRun.error) return { error: newRun.error };
+
+    // Reducers may handle this to show the data and reset isFetching
+    dispatch({ type: RUN_STOP_SUCCESS, newRun });
+    return newRun;
   };
 };
 

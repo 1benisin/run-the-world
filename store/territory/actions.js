@@ -2,9 +2,22 @@ export const FETCH_TERRITORIES = 'FETCH_TERRITORIES';
 export const SAVE_TERRITORY_REQUEST = 'SAVE_TERRITORY_REQUEST';
 export const SAVE_TERRITORY_SUCCESS = 'SAVE_TERRITORY_SUCCESS';
 export const SAVE_TERRITORY_FAILURE = 'SAVE_TERRITORY_FAILURE';
+//
+export const TERRITORY_CREATE_REQUEST = 'TERRITORY_CREATE_REQUEST';
+export const TERRITORY_CREATE_SUCCESS = 'TERRITORY_CREATE_SUCCESS';
+export const TERRITORY_CREATE_FAILURE = 'TERRITORY_CREATE_FAILURE';
+//
 export const DELETE_TERRITORIES = 'DELETE_TERRITORIES';
 
 import { database } from '../../services/firebase';
+
+export const createTerritory = run => {
+  return async dispatch => {
+    dispatch({ type: TERRITORY_CREATE_REQUEST });
+
+    dispatch({ type: TERRITORY_CREATE_SUCCESS });
+  };
+};
 
 export const saveTerritory = (userId, coords, runIds) => {
   // Redux Thunk will inject dispatch here:
