@@ -25,67 +25,71 @@ import Territory from './model';
 export const createTerritory = () => {
   return async (dispatch, getState) => {
     dispatch({ type: TERRITORY_CREATE_REQUEST });
+    try {
+      const completedRun = getState().runs.completedRun;
+      if (!completedRun) console.warn('No completed run');
+      const territories = getState().territories;
 
-    const completedRun = getState().runs.completedRun;
-    if (!completedRun) console.warn('No completed run');
-    const territories = getState().territories;
+      // untangle completedRun polygon
+      completedRun.coords = TerritoryEffects.untwistRunPoints(
+        completedRun.coords
+      );
 
-    // untangle completedRun polygon
-    completedRun.coords = TerritoryEffects.untwistRunPoints(
-      completedRun.coords
-    );
+      // get all overlapping territories
+      const {
+        userTerritories,
+        nonUserTerritories
+      } = TerritoryEffects.getOverlappingTerritories(completedRun, territories);
 
-    // get all overlapping territories
-    const {
-      userTerritories,
-      nonUserTerritories
-    } = TerritoryEffects.getOverlappingTerritories(completedRun, territories);
+      // check if run is completely inside non-user territory
+      const checkResponse = TerritoryEffects.checkRunInsideTerritory(
+        completedRun,
+        nonUserTerritories
+      );
+      if (checkResponse instanceof AppError) {
+        dispatch(appErrorActions.createError(checkResponse));
+        dispatch({ type: TERRITORY_CREATE_FAILURE });
+        return;
+      }
 
-    // check if run is completely inside non-user territory
-    const checkResponse = TerritoryEffects.checkRunInsideTerritory(
-      completedRun,
-      nonUserTerritories
-    );
-    if (checkResponse instanceof AppError) {
-      dispatch(appErrorActions.createError(checkResponse));
-      dispatch({ type: TERRITORY_CREATE_FAILURE });
+      // unite all user territories
+      completedRun.coords = TerritoryEffects.uniteTerritories(
+        completedRun,
+        userTerritories
+      );
+
+      // subtract all non-user territories
+      const territoriesToUpdate = TerritoryEffects.subtractTerritories(
+        completedRun,
+        nonUserTerritories
+      );
+
+      // add completed run to be upated
+      const newTerr = new Territory(
+        uuid(),
+        completedRun.userId,
+        completedRun.coords,
+        Date.now()
+      );
+      territoriesToUpdate[newTerr.id] = newTerr;
+
+      // add old user Territories to be deleted
+      userTerritories.forEach(userTer => {
+        territoriesToUpdate[userTer.id] = null;
+      });
+
+      // update territories in database
+      await TerritoryEffects.updateDB(territoriesToUpdate);
+
+      dispatch({ type: TERRITORY_CREATE_SUCCESS });
+      dispatch(fetchTerritories());
+
       return;
+    } catch (error) {
+      console.error(error);
+      dispatch({ type: TERRITORY_CREATE_FAILURE });
+      throw error;
     }
-
-    // unite all user territories
-    completedRun.coords = TerritoryEffects.uniteTerritories(
-      completedRun,
-      userTerritories
-    );
-
-    // subtract all non-user territories
-    const territoriesToUpdate = TerritoryEffects.subtractTerritories(
-      completedRun,
-      nonUserTerritories
-    );
-
-    console.log('territoriesToUpdate', territoriesToUpdate);
-
-    // add completed run to be upated
-    const newTerr = new Territory(
-      uuid(),
-      completedRun.userId,
-      completedRun.coords,
-      Date.now()
-    );
-    territoriesToUpdate[newTerr.id] = newTerr;
-
-    // add old user Territories to be deleted
-    userTerritories.forEach(userTer => {
-      territoriesToUpdate[userTer.id] = null;
-    });
-
-    // update territories in database
-    await TerritoryEffects.updateDB(territoriesToUpdate);
-
-    // dispatch({ type: TERRITORIES_FETCH_SUCCESS, newTerr });
-
-    return;
   };
 };
 
