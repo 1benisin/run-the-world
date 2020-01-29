@@ -1,7 +1,12 @@
 import {
   FETCH_TERRITORIES,
   SAVE_TERRITORY_SUCCESS,
-  DELETE_TERRITORIES
+  DELETE_TERRITORIES,
+  TERRITORY_CREATE_REQUEST,
+  TERRITORY_CREATE_SUCCESS,
+  TERRITORY_CREATE_FAILURE,
+  TERRITORIES_FETCH_REQUEST,
+  TERRITORIES_FETCH_SUCCESS
 } from '../territory/actions';
 import Territory from '../../models/territory';
 import * as testData from '../../fake-data/fake-data';
@@ -32,6 +37,10 @@ const initialState = [
 
 export default (state = initialState, action) => {
   switch (action.type) {
+    //
+    case TERRITORIES_FETCH_SUCCESS:
+      return [...action.territories];
+
     case SAVE_TERRITORY_SUCCESS:
       const newTer = new Territory(
         action.newTerritory.id,

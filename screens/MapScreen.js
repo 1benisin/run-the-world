@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,82 +8,52 @@ import {
   StatusBar,
   Alert
 } from 'react-native';
-import { FAB } from 'react-native-paper';
+import { FAB, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 var geodist = require('geodist');
 
 import * as polyHelper from '../services/polygons';
 import Map from '../components/Map';
 import Menu from '../components/Menu';
+import ErrorPopup from '../components/ErrorPopup';
 import * as runActions from '../store/run/actions';
 import * as territoryActions from '../store/territory/actions';
 import { auth } from '../services/firebase';
+import Run from '../store/run/model';
 
 const MapScreen = ({ navigation }) => {
   const [currentRunStartTime, setCurrentRunStartTime] = useState();
   const [currentRunCoords, setCurrentRunCoords] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [startButtonTitle, setStartButtonTitle] = useState('Start');
 
   const dispatch = useDispatch();
 
   const territories = useSelector(state => state.territories);
   const user = useSelector(state => state.user);
+  const isRunning = useSelector(state => state.runs.isRunning);
+  const error = useSelector(state => state.appError.error);
+  const completedRun = useSelector(state => state.runs.completedRun);
 
   const stopRun = () => {
-    setIsRunning(false);
-    setStartButtonTitle('Start');
+    dispatch(runActions.stopRun());
     setCurrentRunCoords([]);
     setCurrentRunStartTime(null);
   };
 
-  const _onRunButtonPress = async () => {
-    const maxFinishDistanceFromStart_ft = 100;
-
+  const _onRunButtonPress = useCallback(async () => {
     if (isRunning) {
-      let runPoints = polyHelper.coordsToPoints(currentRunCoords);
+      // end run
+      dispatch(runActions.stopRun());
+      return;
 
-      // check if run is too short
-      if (runPoints.length < 3) {
-        Alert.alert('Run too short', 'Not enough geo data points to log run', [
-          { text: 'OK' }
-        ]);
-        stopRun();
-        return;
-      }
+      // if no Run in returned it means not to create a territory
+      const terrError = await dispatch(territoryActions.createTerritory());
+      console.log('terrError', terrError);
 
-      // check if start and finish of run are close enough
-      let continueRun;
-      const distBetweenStartFinish = () =>
-        geodist(runPoints[0], runPoints[runPoints.length - 1], {
-          exact: true,
-          unit: 'feet'
-        });
-      if (distBetweenStartFinish() > maxFinishDistanceFromStart_ft) {
-        // check if they ran past start point
-        // look back through half the run to see if there is a point that is close enough to start point
-        // if there is slice off the tail of the run back to that point
-        for (let k = runPoints.length - 1; k > runPoints.length / 2; k--) {
-          const p = runPoints[k];
-          const distFromStart = geodist(runPoints[0], p, {
-            exact: true,
-            unit: 'feet'
-          });
-          if (distFromStart < maxFinishDistanceFromStart_ft) {
-            runPoints = runPoints.slice(0, k + 1);
-            break;
-          }
-        }
-        // if distance is still too far check if user wants to continue run
-        if (distBetweenStartFinish() > maxFinishDistanceFromStart_ft) {
-          if (await asyncAlertTooFarFromStart(distBetweenStartFinish())) return;
-        }
-      }
+      // create territory
+      const newTerr = await dispatch(territoryActions.createTerritory(newRun));
 
-      // save new run
-      const savedRun = await dispatch(
-        runActions.saveRun(auth.currentUser.uid, runPoints, currentRunStartTime)
-      );
+      console.log('STOP button', newTerr);
+      return;
 
       // untwist tangled polygon for runs that overlap themselves
       runTerritoriesCoords = polyHelper.untwistPolygon(runPoints);
@@ -160,11 +130,11 @@ const MapScreen = ({ navigation }) => {
 
       stopRun();
     } else {
-      setCurrentRunStartTime(Date.now());
-      setIsRunning(true);
-      setStartButtonTitle('Stop');
+      dispatch(runActions.startRun());
+      // setCurrentRunStartTime(Date.now());
+      // setIsRunning(true);
     }
-  };
+  }, [dispatch, isRunning]);
 
   const _onDebugMapTouch = coord => {
     if (isRunning) {
@@ -181,13 +151,13 @@ const MapScreen = ({ navigation }) => {
       />
 
       <Menu navigation={navigation} />
-
       <FAB
-        label={startButtonTitle}
+        label={isRunning ? 'STOP' : 'START'}
         icon="run"
         style={styles.footerContainer}
         onPress={_onRunButtonPress}
       />
+      {!!error && <ErrorPopup error={error} />}
     </View>
   );
 };
@@ -205,18 +175,18 @@ const styles = StyleSheet.create({
 
 export default MapScreen;
 
-const asyncAlertTooFarFromStart = async distBetweenStartFinish =>
+const alert_tooFarFromStart = async distBetweenStartFinish =>
   new Promise(resolve => {
     Alert.alert(
-      'Too Far From Start',
-      `Your run will be saved but no territory will be conquered. You must be less than 100 feet from starting point of your run to conquer territory. ${distBetweenStartFinish} feet away.`,
+      'Too Far From Starting Point',
+      Run.TOO_FAR_FROM_START_ERROR.message,
       [
         {
           text: 'Continue Running',
-          onPress: () => resolve(true),
+          onPress: () => resolve(false),
           style: 'cancel'
         },
-        { text: 'End Run', onPress: () => resolve(false) }
+        { text: 'End & Save Run', onPress: () => resolve(true) }
       ],
       { cancelable: false }
     );

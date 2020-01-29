@@ -4,12 +4,13 @@ import MapView, { Polygon, Marker } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
 var geodist = require('geodist');
 
+import CurrentRun from './CurrentRun';
 import * as runActions from '../store/run/actions';
 import * as territoryActions from '../store/territory/actions';
-import * as polyHelper from '../helpers/polyHelper';
+import * as polygonService from '../services/polygons';
 import { auth } from '../services/firebase';
 
-const Map = ({ onDebugMapTouch, currentRunCoords }) => {
+const Map = () => {
   const dispatch = useDispatch();
 
   const territories = useSelector(state => state.territories);
@@ -19,12 +20,8 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
     dispatch(territoryActions.fetchTerritories());
   }, []);
 
-  const handleRegionChange = async region => {
-    dispatch(territoryActions.fetchTerritories(region));
-  };
-
   const simulateNewRunCoordinate = e => {
-    onDebugMapTouch(e.nativeEvent.coordinate);
+    dispatch(runActions.addCoord(e.nativeEvent.coordinate));
   };
 
   return (
@@ -42,7 +39,7 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
       {territories.map(ter => (
         <Polygon
           key={ter.id}
-          coordinates={polyHelper.pointsToCoords(ter.coords)}
+          coordinates={polygonService.pointsToCoords(ter.coords)}
           strokeWidth={3}
           strokeColor="#000"
           fillColor={
@@ -52,13 +49,7 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
           }
         />
       ))}
-      {currentRunCoords && currentRunCoords.length > 2 && (
-        <Polygon
-          coordinates={currentRunCoords}
-          strokeColor="#ccc"
-          fillColor="rgb(200, 255, 255)"
-        />
-      )}
+      <CurrentRun />
     </MapView>
   );
 };
