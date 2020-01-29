@@ -11,7 +11,7 @@ export const convertCoordsToPoints = coords => {
 
 export const checkTooShort = runPoints => {
   return runPoints.length < Run.MIN_GEO_POINTS
-    ? Run.TOO_SHORT_ERROR
+    ? { error: Run.TOO_SHORT_ERROR }
     : runPoints;
 };
 
@@ -48,7 +48,7 @@ export const checkStartFinishDistance = runPoints => {
   }
 
   // -- distance too far
-  return Run.TOO_FAR_FROM_START_ERROR;
+  return { error: Run.TOO_FAR_FROM_START_ERROR };
 };
 
 export const saveRun = async newRun => {
@@ -60,6 +60,6 @@ export const saveRun = async newRun => {
   } catch (error) {
     //
     console.warn(error);
-    return Run.SAVE_FAILED_ERROR;
+    return { error: Run.SAVE_FAILED_ERROR };
   }
 };

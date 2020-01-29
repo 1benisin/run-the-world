@@ -7,10 +7,10 @@ var geodist = require('geodist');
 import CurrentRun from './CurrentRun';
 import * as runActions from '../store/run/actions';
 import * as territoryActions from '../store/territory/actions';
-import * as polyHelper from '../helpers/polyHelper';
+import * as polygonService from '../services/polygons';
 import { auth } from '../services/firebase';
 
-const Map = ({ onDebugMapTouch, currentRunCoords }) => {
+const Map = () => {
   const dispatch = useDispatch();
 
   const territories = useSelector(state => state.territories);
@@ -19,10 +19,6 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
   useEffect(() => {
     dispatch(territoryActions.fetchTerritories());
   }, []);
-
-  const handleRegionChange = async region => {
-    dispatch(territoryActions.fetchTerritories(region));
-  };
 
   const simulateNewRunCoordinate = e => {
     dispatch(runActions.addCoord(e.nativeEvent.coordinate));
@@ -43,7 +39,7 @@ const Map = ({ onDebugMapTouch, currentRunCoords }) => {
       {territories.map(ter => (
         <Polygon
           key={ter.id}
-          coordinates={polyHelper.pointsToCoords(ter.coords)}
+          coordinates={polygonService.pointsToCoords(ter.coords)}
           strokeWidth={3}
           strokeColor="#000"
           fillColor={

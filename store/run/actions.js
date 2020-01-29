@@ -16,9 +16,11 @@ export const RUN_ADD_COORD_REQUEST = 'RUN_ADD_COORD_REQUEST';
 export const RUN_ADD_COORD_SUCCESS = 'RUN_ADD_COORD_SUCCESS';
 export const RUN_ADD_COORD_FAILURE = 'RUN_ADD_COORD_FAILURE';
 
+import * as appErrorActions from '../appError/actions';
 import * as RunEffects from './effects';
 import { database } from '../../services/firebase';
 import Run from './model';
+import AppError from '../appError/model';
 
 export const addCoord = coord => {
   return async dispatch => {
@@ -42,7 +44,7 @@ export const startRun = () => {
   };
 };
 
-export const stopRun = (ignoreErrors = []) => {
+export const stopRun = (ignoreError = false) => {
   return async (dispatch, getState) => {
     dispatch({ type: RUN_STOP_REQUEST });
 
@@ -55,25 +57,32 @@ export const stopRun = (ignoreErrors = []) => {
 
     // Effect - check if run is too short
     runPoints = RunEffects.checkTooShort(runPoints);
-    if (runPoints.error) {
+    if (runPoints instanceof AppError) {
       dispatch({ type: RUN_STOP_FAILURE });
-      return { error: runPoints.error };
+      dispatch(appErrorActions.createError(runPoints));
+      return runPoints;
     }
 
     // Effect - check if start and finish of run are close enough
-    if (!ignoreErrors.includes(Run.TOO_FAR_FROM_START_ERROR)) {
+    if (!ignoreError) {
       runPoints = RunEffects.checkStartFinishDistance(runPoints);
-      if (runPoints.error) return { error: runPoints.error };
+      if (runPoints instanceof AppError) {
+        dispatch(appErrorActions.createError(runPoints));
+        return runPoints;
+      }
     }
 
     // Effect - save new run
-    let newRun = new Run(null, userId, coordinates, startTime, endTime);
+    let newRun = new Run(null, userId, runPoints, startTime, endTime);
     newRun = await RunEffects.saveRun(newRun);
-    if (newRun.error) return { error: newRun.error };
+    if (newRun instanceof AppError) {
+      dispatch(appErrorActions.createError(newRun));
+      return newRun;
+    }
 
     // Reducers may handle this to show the data and reset isFetching
     dispatch({ type: RUN_STOP_SUCCESS, newRun });
-    return newRun;
+    return null;
   };
 };
 

@@ -1,4 +1,7 @@
+const uuid = require('uuid');
+
 export const FETCH_TERRITORIES = 'FETCH_TERRITORIES';
+
 export const SAVE_TERRITORY_REQUEST = 'SAVE_TERRITORY_REQUEST';
 export const SAVE_TERRITORY_SUCCESS = 'SAVE_TERRITORY_SUCCESS';
 export const SAVE_TERRITORY_FAILURE = 'SAVE_TERRITORY_FAILURE';
@@ -7,15 +10,82 @@ export const TERRITORY_CREATE_REQUEST = 'TERRITORY_CREATE_REQUEST';
 export const TERRITORY_CREATE_SUCCESS = 'TERRITORY_CREATE_SUCCESS';
 export const TERRITORY_CREATE_FAILURE = 'TERRITORY_CREATE_FAILURE';
 //
+export const TERRITORIES_FETCH_REQUEST = 'TERRITORIES_FETCH_REQUEST';
+export const TERRITORIES_FETCH_SUCCESS = 'TERRITORIES_FETCH_SUCCESS';
+export const TERRITORIES_FETCH_FAILURE = 'TERRITORIES_FETCH_FAILURE';
+//
 export const DELETE_TERRITORIES = 'DELETE_TERRITORIES';
 
 import { database } from '../../services/firebase';
+import * as TerritoryEffects from './effects';
+import * as appErrorActions from '../appError/actions';
+import AppError from '../appError/model';
+import Territory from './model';
 
-export const createTerritory = run => {
-  return async dispatch => {
+export const createTerritory = () => {
+  return async (dispatch, getState) => {
     dispatch({ type: TERRITORY_CREATE_REQUEST });
 
-    dispatch({ type: TERRITORY_CREATE_SUCCESS });
+    const completedRun = getState().runs.completedRun;
+    if (!completedRun) console.warn('No completed run');
+    const territories = getState().territories;
+
+    // untangle completedRun polygon
+    completedRun.coords = TerritoryEffects.untwistRunPoints(
+      completedRun.coords
+    );
+
+    // get all overlapping territories
+    const {
+      userTerritories,
+      nonUserTerritories
+    } = TerritoryEffects.getOverlappingTerritories(completedRun, territories);
+
+    // check if run is completely inside non-user territory
+    const checkResponse = TerritoryEffects.checkRunInsideTerritory(
+      completedRun,
+      nonUserTerritories
+    );
+    if (checkResponse instanceof AppError) {
+      dispatch(appErrorActions.createError(checkResponse));
+      dispatch({ type: TERRITORY_CREATE_FAILURE });
+      return;
+    }
+
+    // unite all user territories
+    completedRun.coords = TerritoryEffects.uniteTerritories(
+      completedRun,
+      userTerritories
+    );
+
+    // subtract all non-user territories
+    const territoriesToUpdate = TerritoryEffects.subtractTerritories(
+      completedRun,
+      nonUserTerritories
+    );
+
+    console.log('territoriesToUpdate', territoriesToUpdate);
+
+    // add completed run to be upated
+    const newTerr = new Territory(
+      uuid(),
+      completedRun.userId,
+      completedRun.coords,
+      Date.now()
+    );
+    territoriesToUpdate[newTerr.id] = newTerr;
+
+    // add old user Territories to be deleted
+    userTerritories.forEach(userTer => {
+      territoriesToUpdate[userTer.id] = null;
+    });
+
+    // update territories in database
+    await TerritoryEffects.updateDB(territoriesToUpdate);
+
+    // dispatch({ type: TERRITORIES_FETCH_SUCCESS, newTerr });
+
+    return;
   };
 };
 
@@ -52,14 +122,17 @@ export const saveTerritory = (userId, coords, runIds) => {
 };
 
 export const fetchTerritories = () => {
-  // expects {northEast: LatLng, southWest: LatLng}
   return async dispatch => {
-    const dataSnapshot = await database.ref('territories').once('value');
-    let territories = dataSnapshot.val();
+    dispatch({ type: TERRITORIES_FETCH_REQUEST });
 
-    territories = territories ? territories : {};
+    const territories = await TerritoryEffects.fetchTerritories();
+    if (territories instanceof AppError) {
+      dispatch(appErrorActions.createError(territories));
+      return;
+    }
 
-    dispatch({ type: FETCH_TERRITORIES, territories });
+    dispatch({ type: TERRITORIES_FETCH_SUCCESS, territories });
+    return;
   };
 };
 

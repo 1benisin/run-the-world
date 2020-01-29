@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,13 +8,14 @@ import {
   StatusBar,
   Alert
 } from 'react-native';
-import { FAB } from 'react-native-paper';
+import { FAB, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 var geodist = require('geodist');
 
 import * as polyHelper from '../services/polygons';
 import Map from '../components/Map';
 import Menu from '../components/Menu';
+import ErrorPopup from '../components/ErrorPopup';
 import * as runActions from '../store/run/actions';
 import * as territoryActions from '../store/territory/actions';
 import { auth } from '../services/firebase';
@@ -29,7 +30,8 @@ const MapScreen = ({ navigation }) => {
   const territories = useSelector(state => state.territories);
   const user = useSelector(state => state.user);
   const isRunning = useSelector(state => state.runs.isRunning);
-  const runError = useSelector(state => state.runs.error);
+  const error = useSelector(state => state.appError.error);
+  const completedRun = useSelector(state => state.runs.completedRun);
 
   const stopRun = () => {
     dispatch(runActions.stopRun());
@@ -37,55 +39,20 @@ const MapScreen = ({ navigation }) => {
     setCurrentRunStartTime(null);
   };
 
-  const alert_runTooShort = async () => {
-    Alert.alert('Run Too Short', Run.TOO_SHORT_ERROR.message, [{ text: 'OK' }]);
-  };
-
-  const alert_runNotSaved = async () => {
-    Alert.alert('Issue Saving Run', Run.SAVE_FAILED_ERROR.message, [
-      { text: 'OK' }
-    ]);
-  };
-
-  const requestEndRun = async () => {
-    let response = await dispatch(runActions.stopRun());
-
-    if (response.error) {
-      switch (response.error) {
-        case Run.TOO_SHORT_ERROR:
-          alert_runTooShort();
-          return null;
-
-        case Run.TOO_FAR_FROM_START_ERROR:
-          return (await alert_tooFarFromStart())
-            ? await dispatch(
-                runActions.stopRun((ignoreErrors = [response.error]))
-              )
-            : null;
-
-        case Run.SAVE_FAILED_ERROR:
-          await alert_runNotSaved();
-          return null;
-
-        default:
-          break;
-      }
-    }
-    return response;
-  };
-
   const _onRunButtonPress = useCallback(async () => {
     if (isRunning) {
       // end run
-      const newRun = await requestEndRun();
+      dispatch(runActions.stopRun());
+      return;
 
       // if no Run in returned it means not to create a territory
-      if (!newRun) return;
+      const terrError = await dispatch(territoryActions.createTerritory());
+      console.log('terrError', terrError);
 
       // create territory
-      const newTerr = dispatch(territoryActions.createTerritory(newRun));
+      const newTerr = await dispatch(territoryActions.createTerritory(newRun));
 
-      console.log(newTerr);
+      console.log('STOP button', newTerr);
       return;
 
       // untwist tangled polygon for runs that overlap themselves
@@ -167,7 +134,7 @@ const MapScreen = ({ navigation }) => {
       // setCurrentRunStartTime(Date.now());
       // setIsRunning(true);
     }
-  }, [isRunning, runError]);
+  }, [dispatch, isRunning]);
 
   const _onDebugMapTouch = coord => {
     if (isRunning) {
@@ -184,13 +151,13 @@ const MapScreen = ({ navigation }) => {
       />
 
       <Menu navigation={navigation} />
-
       <FAB
         label={isRunning ? 'STOP' : 'START'}
         icon="run"
         style={styles.footerContainer}
         onPress={_onRunButtonPress}
       />
+      {!!error && <ErrorPopup error={error} />}
     </View>
   );
 };
