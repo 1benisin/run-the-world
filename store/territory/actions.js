@@ -59,27 +59,26 @@ export const createTerritory = () => {
       );
 
       // subtract all non-user territories
-      const territoriesToUpdate = TerritoryEffects.subtractTerritories(
+      const editedTerritories = TerritoryEffects.subtractTerritories(
         completedRun,
         nonUserTerritories
       );
 
       // add completed run to be upated
       const newTerr = new Territory(
-        uuid(),
         completedRun.userId,
         completedRun.coords,
         Date.now()
       );
-      territoriesToUpdate[newTerr.id] = newTerr;
+      editedTerritories[Territory.uuid()] = newTerr;
 
       // add old user Territories to be deleted
       userTerritories.forEach(userTer => {
-        territoriesToUpdate[userTer.id] = null;
+        editedTerritories[userTer.id] = null;
       });
 
       // update territories in database
-      await TerritoryEffects.updateDB(territoriesToUpdate);
+      await TerritoryEffects.editTerritories(editedTerritories);
 
       dispatch({ type: TERRITORY_CREATE_SUCCESS });
       dispatch(fetchTerritories());
@@ -130,7 +129,8 @@ export const fetchTerritories = () => {
     dispatch({ type: TERRITORIES_FETCH_REQUEST });
 
     const territories = await TerritoryEffects.fetchTerritories();
-    if (territories instanceof AppError) {
+    const isError = territories instanceof AppError;
+    if (isError) {
       dispatch(appErrorActions.createError(territories));
       return;
     }

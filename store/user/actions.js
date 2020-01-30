@@ -9,7 +9,7 @@ export const logInUser = authUserData => {
     // destructure authUserData object
     const { displayName, email, photoURL, uid } = authUserData;
 
-    // get user info form database
+    // get user info from database
     const userRef = database.ref('users/' + uid);
     const dataSnapshot = await userRef.once('value');
     let user = dataSnapshot.val();
@@ -25,7 +25,6 @@ export const logInUser = authUserData => {
           : 'http://cdn.onlinewebfonts.com/svg/img_184513.png',
         uid,
         color: theme.colors.primary,
-        totalDistance: 0,
         userName: 'Anonymous User'
       };
 

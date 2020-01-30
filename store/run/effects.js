@@ -54,12 +54,34 @@ export const checkStartFinishDistance = runPoints => {
 export const saveRun = async newRun => {
   try {
     // Perform the Firebase API call
-    const newRunRef = await database.ref('runs').push(newRun);
-    newRun.id = newRunRef.key;
+    const runId = Run.uuid();
+    await database.ref('runs/' + runId).set(newRun);
+    newRun.id = runId;
     return newRun;
   } catch (error) {
     //
     console.warn(error);
     return Run.SAVE_FAILED_ERROR;
+  }
+};
+
+export const fetchUserRuns = async userId => {
+  try {
+    const snapshot = await database
+      .ref('runs')
+      .orderByChild('userId')
+      .equalTo(userId)
+      .once('value');
+    const data = snapshot.val();
+
+    const userRuns = Object.keys(data).map(key => {
+      const run = data[key];
+      return new Run().initWithID(key, run);
+    });
+
+    return userRuns;
+  } catch (error) {
+    console.warn(error);
+    throw error;
   }
 };

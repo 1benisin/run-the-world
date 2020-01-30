@@ -21,7 +21,10 @@ const MainNavigationRouter = createStackNavigator(
   },
   {
     initialRouteName: 'LoadingScreen',
-    headerMode: 'none'
+    headerMode: 'none',
+    navigationOptions: {
+      gesturesEnabled: false
+    }
   }
 );
 

@@ -1,17 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, SafeAreaView } from 'react-native';
 import { Avatar, Title, Subheading, Text } from 'react-native-paper';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 import BackButton from '../components/BackButton';
 import theme from '../constants/theme';
+import * as runActions from '../store/run/actions';
 
 const ProfileScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
+
   let photoURL = useSelector(state => state.user.photoURL);
   let name = useSelector(state => state.user.name);
   let userName = useSelector(state => state.user.userName);
   let color = useSelector(state => state.user.color);
-  let totalDistance = useSelector(state => state.user.totalDistance);
+  let userRuns = useSelector(state => state.runs.userRuns);
+
+  const [totalDistance, setTotalDistance] = useState(0);
+
+  useEffect(() => {
+    dispatch(runActions.fetchUserRuns());
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -35,6 +44,13 @@ const ProfileScreen = ({ navigation }) => {
       <Text>Total Distance Run: {totalDistance} </Text>
 
       <BackButton navigation={navigation} />
+
+      <View>
+        <Subheading>Your Runs</Subheading>
+        {userRuns.map(run => (
+          <Text key={run.id}>{run.id}</Text>
+        ))}
+      </View>
     </View>
   );
 };

@@ -1,3 +1,5 @@
+const uuid = require('uuid');
+
 import AppError from '../appError/model';
 
 class Run {
@@ -16,12 +18,25 @@ class Run {
     `You must be less than ${this.MAX_START_FINISH_DIST_FT} feet from the starting point of your run to conquer territory`
   );
 
-  constructor(id, userId, coords, startTime, endTime) {
-    this.id = id || null;
+  static uuid = () => uuid();
+
+  constructor(userId, coords, startTime, endTime) {
     this.userId = userId || '';
     this.coords = coords || [];
     this.startTime = startTime || null;
     this.endTime = endTime || null;
+  }
+
+  initWithID(id, run) {
+    if (typeof id !== 'string') throw Error(`id ${id} not type of string`);
+    this.id = id;
+
+    this.userId = run.userId ? run.userId : this.userId;
+    this.coords = run.coords ? run.coords : this.coords;
+    this.startTime = run.startTime ? run.startTime : this.startTime;
+    this.endTime = run.endTime ? run.endTime : this.endTime;
+
+    return this;
   }
 }
 

@@ -30,7 +30,7 @@ const ErrorPopup = ({ error }) => {
           onPress={() => {
             const ignoreError = true;
             dispatch(appErrorActions.clearError());
-            dispatch(runActions.stopRun(ignoreError));
+            dispatch(runActions.saveRun(ignoreError));
           }}
         >
           Stop & Save Run
