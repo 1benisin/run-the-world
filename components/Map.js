@@ -43,7 +43,7 @@ const Map = () => {
           strokeWidth={3}
           strokeColor="#000"
           fillColor={
-            ter.userId === user.uid
+            ter.userId === user.id
               ? 'rgba(100, 100, 255, 0.4)'
               : 'rgba(255, 20, 0, 0.2)'
           }

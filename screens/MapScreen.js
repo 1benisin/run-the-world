@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { FAB, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
-var geodist = require('geodist');
 
 import * as polyHelper from '../services/polygons';
 import Map from '../components/Map';
@@ -66,67 +65,3 @@ const styles = StyleSheet.create({
 });
 
 export default MapScreen;
-
-const alert_tooFarFromStart = async distBetweenStartFinish =>
-  new Promise(resolve => {
-    Alert.alert(
-      'Too Far From Starting Point',
-      Run.TOO_FAR_FROM_START_ERROR.message,
-      [
-        {
-          text: 'Continue Running',
-          onPress: () => resolve(false),
-          style: 'cancel'
-        },
-        { text: 'End & Save Run', onPress: () => resolve(true) }
-      ],
-      { cancelable: false }
-    );
-  });
-
-const mergeTerritories = (runCoords, allTerritories) => {
-  // find all user territories that overlap current run
-  const overlappingTerrs = allTerritories.filter(
-    ter =>
-      ter.userId === auth.currentUser.uid &&
-      polyHelper.polysOverlap(runCoords, ter.coords)
-  );
-
-  // merge all overlapping territories together
-  let newTerCoords = overlappingTerrs.reduce((acc, ter) => {
-    return polyHelper.merge(ter.coords, acc);
-  }, runCoords);
-
-  return {
-    newTerCoords,
-    overlappingTerrs
-  };
-};
-
-const combineTerritoryRunIds = territories => {
-  return territories.reduce((acc, terr) => {
-    terr.runs.forEach(run => {
-      if (!acc.includes(run)) {
-        acc.push(run);
-      }
-    });
-    return acc;
-  }, []);
-};
-
-const subtractTerritories = (userTerCoords, allTerritories) => {
-  // find all non-user territories that overlap user territory
-  const overlappingTerrs = allTerritories.filter(
-    ter =>
-      ter.userId !== auth.currentUser.uid &&
-      polyHelper.polysOverlap(ter.coords, userTerCoords)
-  );
-  // subtract user territory from all non-user territories
-  return overlappingTerrs.map(ter => {
-    const alteredRegions = polyHelper.difference(ter.coords, userTerCoords);
-    return {
-      oldTer: ter,
-      newRegions: alteredRegions
-    };
-  });
-};

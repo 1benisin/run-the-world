@@ -1,26 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
-import { Avatar, Title, Subheading, Text } from 'react-native-paper';
+import { View, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import { Avatar, Title, Subheading, Text, Divider } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 
 import BackButton from '../components/BackButton';
 import theme from '../constants/theme';
 import * as runActions from '../store/run/actions';
+import * as utils from '../services/utils';
 
 const ProfileScreen = ({ navigation }) => {
+  const [totalDistance, setTotalDistance] = useState(0);
+  const [editing, setEditing] = useState(false);
+
   const dispatch = useDispatch();
 
   let photoURL = useSelector(state => state.user.photoURL);
   let name = useSelector(state => state.user.name);
   let userName = useSelector(state => state.user.userName);
   let color = useSelector(state => state.user.color);
-  let userRuns = useSelector(state => state.runs.userRuns);
-
-  const [totalDistance, setTotalDistance] = useState(0);
+  let userRuns = useSelector(state =>
+    state.runs.userRuns.sort((a, b) => b.startTime - a.startTime)
+  );
 
   useEffect(() => {
     dispatch(runActions.fetchUserRuns());
   }, []);
+
+  useEffect(() => {
+    let dist = userRuns.reduce((acc, run) => {
+      return acc + run.distance;
+    }, 0);
+    dist = utils.feetToMiles(dist);
+    setTotalDistance(dist);
+  }, [userRuns]);
 
   return (
     <View style={styles.container}>
@@ -33,24 +45,28 @@ const ProfileScreen = ({ navigation }) => {
             style={{ backgroundColor: theme.colors.background }}
           />
 
-          <Subheading>{name}</Subheading>
+          <Subheading>{userName}</Subheading>
         </SafeAreaView>
       </View>
-
-      <Subheading>User Name: {userName}</Subheading>
 
       <Text>Color: {color}</Text>
 
       <Text>Total Distance Run: {totalDistance} </Text>
 
+      <Divider />
       <BackButton navigation={navigation} />
+      <Divider />
 
-      <View>
+      <ScrollView>
         <Subheading>Your Runs</Subheading>
         {userRuns.map(run => (
-          <Text key={run.id}>{run.id}</Text>
+          <View key={run.id} style={styles.runCard}>
+            <Text>{utils.formatDate(run.startTime)}</Text>
+            <Text> --- </Text>
+            <Text>{utils.feetToMiles(run.distance)} mi</Text>
+          </View>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -69,6 +85,9 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  runCard: {
+    flexDirection: 'row'
   }
 });
 

@@ -1,8 +1,9 @@
-// CONSTANTS
+// RUN-EFFECTS
 
 import Run from './model';
 import * as PolygonService from '../../services/polygons';
 import { database } from '../../services/firebase';
+import { Polygon } from 'react-native-maps';
 var geodist = require('geodist');
 
 export const convertCoordsToPoints = coords => {
@@ -49,6 +50,17 @@ export const checkStartFinishDistance = runPoints => {
 
   // -- distance too far
   return Run.TOO_FAR_FROM_START_ERROR;
+};
+
+export const calculateRunLength = runPoints => {
+  let runLength = 0;
+  for (let i = 0; i < runPoints.length - 1; i++) {
+    const a = runPoints[i];
+    const b = runPoints[i + 1];
+    const dist = geodist(a, b, { exact: true, unit: 'feet' });
+    runLength += dist;
+  }
+  return Math.round(runLength);
 };
 
 export const saveRun = async newRun => {

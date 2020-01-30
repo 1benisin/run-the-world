@@ -3,6 +3,7 @@ export const LOGOUT_USER = 'LOGOUT_USER';
 
 import { auth, database } from '../../services/firebase';
 import theme from '../../constants/theme';
+import User from './model';
 
 export const logInUser = authUserData => {
   return async dispatch => {
@@ -14,20 +15,14 @@ export const logInUser = authUserData => {
     const dataSnapshot = await userRef.once('value');
     let user = dataSnapshot.val();
 
-    // if user doesn't exist create user
-    if (!user) {
-      user = {
-        ...user,
-        name: displayName,
-        email,
-        photoURL: photoURL
-          ? photoURL
-          : 'http://cdn.onlinewebfonts.com/svg/img_184513.png',
-        uid,
-        color: theme.colors.primary,
-        userName: 'Anonymous User'
-      };
+    if (user) {
+      // if user exist in DB
 
+      user = new User().initWithID(uid, user);
+    } else {
+      // if user doesn't exist in DB
+
+      user = new User(displayName, email, photoURL, undefined);
       userRef
         .set(user)
         .then(function() {
@@ -36,6 +31,7 @@ export const logInUser = authUserData => {
         .catch(function(error) {
           throw Error(`RunTheWorld: adding new user ${uid} to database failed`);
         });
+      user = new User().initWithID(uid, user);
     }
 
     dispatch({ type: LOGIN_USER, user });

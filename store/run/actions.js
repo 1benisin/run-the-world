@@ -25,7 +25,7 @@ export const fetchUserRuns = () => {
     dispatch({ type: RUNS_FETCH_REQUEST });
 
     try {
-      const userId = getState().user.uid;
+      const userId = getState().user.id;
       const userRuns = await RunEffects.fetchUserRuns(userId);
 
       dispatch({ type: RUNS_FETCH_SUCCESS, userRuns });
@@ -65,10 +65,14 @@ export const saveRun = (ignoreError = false) => {
 
     const endTime = Date.now();
     const { coordinates, startTime } = getState().runs;
-    const userId = getState().user.uid;
+    const userId = getState().user.id;
 
     // Effect - convert coords to points
     let runPoints = RunEffects.convertCoordsToPoints(coordinates);
+
+    // EFFECT - calculate run distance
+    const runDistance = RunEffects.calculateRunLength(runPoints);
+    console.log(runDistance);
 
     // Effect - check if run is too short
     runPoints = RunEffects.checkTooShort(runPoints);
@@ -96,7 +100,8 @@ export const saveRun = (ignoreError = false) => {
       runPoints,
       startTime,
       endTime,
-      isValidTerritory
+      isValidTerritory,
+      runDistance
     );
     newRun = await RunEffects.saveRun(newRun);
     const isError = newRun instanceof AppError;

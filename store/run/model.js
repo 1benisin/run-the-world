@@ -20,12 +20,13 @@ class Run {
 
   static uuid = () => uuid();
 
-  constructor(userId, coords, startTime, endTime, isValidTerritory) {
+  constructor(userId, coords, startTime, endTime, isValidTerritory, distance) {
     this.userId = userId || '';
     this.coords = coords || [];
     this.startTime = startTime || null;
     this.endTime = endTime || null;
     this.isValidTerritory = isValidTerritory || false;
+    this.distance = distance || 0;
   }
 
   initWithID(id, run) {
@@ -39,6 +40,7 @@ class Run {
     this.isValidTerritory = run.isValidTerritory
       ? run.isValidTerritory
       : this.isValidTerritory;
+    this.distance = run.distance ? run.distance : this.distance;
 
     return this;
   }
