@@ -79,16 +79,25 @@ export const saveRun = (ignoreError = false) => {
     }
 
     // Effect - check if start and finish of run are close enough
+    let isValidTerritory = false;
     if (!ignoreError) {
       runPoints = RunEffects.checkStartFinishDistance(runPoints);
-      if (runPoints instanceof AppError) {
+      const isError = runPoints instanceof AppError;
+      if (isError) {
         dispatch(appErrorActions.createError(runPoints));
         return runPoints;
       }
+      isValidTerritory = true;
     }
 
     // Effect - save new run
-    let newRun = new Run(userId, runPoints, startTime, endTime);
+    let newRun = new Run(
+      userId,
+      runPoints,
+      startTime,
+      endTime,
+      isValidTerritory
+    );
     newRun = await RunEffects.saveRun(newRun);
     const isError = newRun instanceof AppError;
     if (isError) {
