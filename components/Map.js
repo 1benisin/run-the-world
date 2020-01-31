@@ -10,7 +10,7 @@ import * as territoryActions from '../store/territory/actions';
 import * as polygonService from '../services/polygons';
 import { auth } from '../services/firebase';
 
-const Map = () => {
+const Map = props => {
   const dispatch = useDispatch();
 
   const territories = useSelector(state => state.territories);
@@ -36,20 +36,7 @@ const Map = () => {
       onPress={simulateNewRunCoordinate}
       showsPointsOfInterest={false}
     >
-      {territories.map(ter => (
-        <Polygon
-          key={ter.id}
-          coordinates={polygonService.pointsToCoords(ter.coords)}
-          // strokeWidth={0}
-          // strokeColor="#000"
-          fillColor={
-            ter.userId === user.id
-              ? 'rgba(100, 100, 255, 0.4)'
-              : 'rgba(255, 20, 0, 0.2)'
-          }
-        />
-      ))}
-      <CurrentRun />
+      {props.children}
     </MapView>
   );
 };

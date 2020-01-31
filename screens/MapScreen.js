@@ -10,7 +10,10 @@ import {
 } from 'react-native';
 import { FAB, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
+import MapView, { Polygon, Marker } from 'react-native-maps';
 
+import * as polygonService from '../services/polygons';
+import CurrentRun from '../components/CurrentRun';
 import * as polyHelper from '../services/polygons';
 import Map from '../components/Map';
 import Menu from '../components/Menu';
@@ -39,7 +42,23 @@ const MapScreen = ({ navigation }) => {
 
   return (
     <View style={styles.screen}>
-      <Map />
+      <Map>
+        {territories.map(ter => (
+          <Polygon
+            key={ter.id}
+            coordinates={polygonService.pointsToCoords(ter.coords)}
+            // strokeWidth={0}
+            // strokeColor="#000"
+            fillColor={
+              ter.userId === user.id
+                ? 'rgba(100, 100, 255, 0.4)'
+                : 'rgba(255, 20, 0, 0.2)'
+            }
+          />
+        ))}
+
+        <CurrentRun />
+      </Map>
 
       <Menu navigation={navigation} />
       <FAB
