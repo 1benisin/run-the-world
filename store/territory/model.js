@@ -1,5 +1,7 @@
 const uuid = require('uuid');
+
 import AppError from '../appError/model';
+import * as PolygonService from '../../services/polygons';
 
 class Territory {
   // ERRORS
@@ -11,10 +13,15 @@ class Territory {
 
   static uuid = () => uuid();
 
-  constructor(userId, coords, dateCreated) {
+  constructor(userId, coords, dateCreated, center) {
     this.userId = userId || '';
     this.coords = coords || [];
     this.dateCreated = dateCreated || null;
+    this.center = center
+      ? center
+      : coords && coords.length
+      ? PolygonService.center(coords)
+      : [0, 0];
   }
 
   initWithID(id, terr) {
@@ -24,6 +31,11 @@ class Territory {
     this.userId = terr.userId ? terr.userId : this.userId;
     this.coords = terr.coords ? terr.coords : this.coords;
     this.dateCreated = terr.dateCreated ? terr.dateCreated : this.dateCreated;
+    this.center = terr.center
+      ? terr.center
+      : terr.coords && terr.coords.length
+      ? PolygonService.center(terr.coords)
+      : [0, 0];
 
     return this;
   }

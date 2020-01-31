@@ -16,7 +16,7 @@ const ProfileScreen = ({ navigation }) => {
 
   let photoURL = useSelector(state => state.user.photoURL);
   let name = useSelector(state => state.user.name);
-  let userName = useSelector(state => state.user.userName);
+  let displayName = useSelector(state => state.user.displayName);
   let color = useSelector(state => state.user.color);
   let userRuns = useSelector(state =>
     state.runs.userRuns.sort((a, b) => b.startTime - a.startTime)
@@ -45,11 +45,11 @@ const ProfileScreen = ({ navigation }) => {
             style={{ backgroundColor: theme.colors.background }}
           />
 
-          <Subheading>{userName}</Subheading>
+          <Subheading>{displayName}</Subheading>
         </SafeAreaView>
       </View>
 
-      <Text>Color: {color}</Text>
+      <Text>Territory Color: {color}</Text>
 
       <Text>Total Distance Run: {totalDistance} </Text>
 
@@ -57,12 +57,11 @@ const ProfileScreen = ({ navigation }) => {
       <BackButton navigation={navigation} />
       <Divider />
 
-      <ScrollView>
+      <ScrollView contentContainerStyle={styles.runsContainer}>
         <Subheading>Your Runs</Subheading>
         {userRuns.map(run => (
-          <View key={run.id} style={styles.runCard}>
+          <View style={styles.runCard} key={run.id}>
             <Text>{utils.formatDate(run.startTime)}</Text>
-            <Text> --- </Text>
             <Text>{utils.feetToMiles(run.distance)} mi</Text>
           </View>
         ))}
@@ -86,8 +85,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
+  runsContainer: {
+    flex: 1,
+    alignItems: 'center'
+  },
   runCard: {
-    flexDirection: 'row'
+    // backgroundColor: 'blue',
+    margin: 5,
+    borderBottomColor: 'grey',
+    borderBottomWidth: 1,
+    width: '80%',
+    flexDirection: 'row',
+    justifyContent: 'space-around'
   }
 });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dimensions, StyleSheet, Alert } from 'react-native';
+import { Dimensions, StyleSheet, Alert, View } from 'react-native';
 import MapView, { Polygon, Marker } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
 var geodist = require('geodist');
@@ -28,10 +28,10 @@ const Map = () => {
     <MapView
       style={styles.map}
       initialRegion={{
-        latitude: 47.620937,
+        latitude: 47.65,
         longitude: -122.35282,
-        latitudeDelta: 0.0422,
-        longitudeDelta: 0.0221
+        latitudeDelta: 0.06,
+        longitudeDelta: 0.0000001
       }}
       onPress={simulateNewRunCoordinate}
       showsPointsOfInterest={false}
@@ -40,8 +40,8 @@ const Map = () => {
         <Polygon
           key={ter.id}
           coordinates={polygonService.pointsToCoords(ter.coords)}
-          strokeWidth={3}
-          strokeColor="#000"
+          // strokeWidth={0}
+          // strokeColor="#000"
           fillColor={
             ter.userId === user.id
               ? 'rgba(100, 100, 255, 0.4)'
