@@ -14,6 +14,7 @@ const CurrentRun = () => {
 
   useEffect(() => {
     if (completedRun) {
+      console.log('completedRun');
       dispatch(territoryActions.fetchTerritories()).then(_ =>
         dispatch(territoryActions.createTerritory())
       );

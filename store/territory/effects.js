@@ -15,7 +15,7 @@ export const fetchTerritories = async () => {
     return keys.map(key => {
       const ter = response[key];
 
-      return new Territory(key, ter.userId, ter.coords, ter.dateCreated);
+      return new Territory().initWithID(key, ter);
     });
   } catch (error) {
     console.error(error);
@@ -63,29 +63,35 @@ export const uniteTerritories = (completedRun, territories) => {
 };
 
 export const subtractTerritories = (completedRun, nonUserTerritories) => {
-  const newTerrs = {};
+  const editedTerrs = {};
   nonUserTerritories.forEach(terr => {
     const alteredRegions = polygonService.difference(
       terr.coords,
       completedRun.coords
     );
 
+    // if territory completely conquered
     if (alteredRegions.length === 0) {
-      newTerrs[terr.id] = null;
+      editedTerrs[terr.id] = null;
+
+      // if territory partially conquered
     } else if (alteredRegions.length === 1) {
-      newTerrs[terr.id] = { ...terr, coords: alteredRegions[0] };
+      editedTerrs[terr.id] = { ...terr, coords: alteredRegions[0] };
+
+      // if territory cut into multiple parts
     } else {
-      newTerrs[terr.id] = null;
+      editedTerrs[terr.id] = null;
       alteredRegions.forEach(coords => {
-        const id = uuid();
-        newTerrs[id] = { ...terr, id, coords };
+        const newTer = { ...terr, coords };
+        delete newTer.id;
+        editedTerrs[Territory.uuid()] = newTer;
       });
     }
   });
-  return newTerrs;
+  return editedTerrs;
 };
 
-export const updateDB = async territoriesObj => {
-  console.log('territoriesObj', territoriesObj);
-  return await database.ref('territories').update(territoriesObj);
+export const editTerritories = async editedTerritories => {
+  console.log('editedTerritories', editedTerritories);
+  return await database.ref('territories').update(editedTerritories);
 };

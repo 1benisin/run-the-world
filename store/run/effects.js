@@ -1,8 +1,9 @@
-// CONSTANTS
+// RUN-EFFECTS
 
 import Run from './model';
 import * as PolygonService from '../../services/polygons';
 import { database } from '../../services/firebase';
+import { Polygon } from 'react-native-maps';
 var geodist = require('geodist');
 
 export const convertCoordsToPoints = coords => {
@@ -51,15 +52,48 @@ export const checkStartFinishDistance = runPoints => {
   return Run.TOO_FAR_FROM_START_ERROR;
 };
 
+export const calculateRunLength = runPoints => {
+  let runLength = 0;
+  for (let i = 0; i < runPoints.length - 1; i++) {
+    const a = runPoints[i];
+    const b = runPoints[i + 1];
+    const dist = geodist(a, b, { exact: true, unit: 'feet' });
+    runLength += dist;
+  }
+  return Math.round(runLength);
+};
+
 export const saveRun = async newRun => {
   try {
     // Perform the Firebase API call
-    const newRunRef = await database.ref('runs').push(newRun);
-    newRun.id = newRunRef.key;
+    const runId = Run.uuid();
+    await database.ref('runs/' + runId).set(newRun);
+    newRun.id = runId;
     return newRun;
   } catch (error) {
     //
     console.warn(error);
     return Run.SAVE_FAILED_ERROR;
+  }
+};
+
+export const fetchUserRuns = async userId => {
+  try {
+    const snapshot = await database
+      .ref('runs')
+      .orderByChild('userId')
+      .equalTo(userId)
+      .once('value');
+    const data = snapshot.val();
+
+    const userRuns = Object.keys(data).map(key => {
+      const run = data[key];
+      return new Run().initWithID(key, run);
+    });
+
+    return userRuns;
+  } catch (error) {
+    console.warn(error);
+    throw error;
   }
 };

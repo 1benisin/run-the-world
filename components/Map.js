@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dimensions, StyleSheet, Alert } from 'react-native';
+import { Dimensions, StyleSheet, Alert, View } from 'react-native';
 import MapView, { Polygon, Marker } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
 var geodist = require('geodist');
@@ -10,7 +10,7 @@ import * as territoryActions from '../store/territory/actions';
 import * as polygonService from '../services/polygons';
 import { auth } from '../services/firebase';
 
-const Map = () => {
+const Map = props => {
   const dispatch = useDispatch();
 
   const territories = useSelector(state => state.territories);
@@ -28,28 +28,15 @@ const Map = () => {
     <MapView
       style={styles.map}
       initialRegion={{
-        latitude: 47.620937,
+        latitude: 47.65,
         longitude: -122.35282,
-        latitudeDelta: 0.0422,
-        longitudeDelta: 0.0221
+        latitudeDelta: 0.06,
+        longitudeDelta: 0.0000001
       }}
       onPress={simulateNewRunCoordinate}
       showsPointsOfInterest={false}
     >
-      {territories.map(ter => (
-        <Polygon
-          key={ter.id}
-          coordinates={polygonService.pointsToCoords(ter.coords)}
-          strokeWidth={3}
-          strokeColor="#000"
-          fillColor={
-            ter.userId === user.uid
-              ? 'rgba(100, 100, 255, 0.4)'
-              : 'rgba(255, 20, 0, 0.2)'
-          }
-        />
-      ))}
-      <CurrentRun />
+      {props.children}
     </MapView>
   );
 };

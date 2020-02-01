@@ -18,3 +18,16 @@ export const nameValidator = name => {
 
   return '';
 };
+
+export const feetToMiles = (feet, decimalPlace) => {
+  const dPlace = decimalPlace ? decimalPlace : 10;
+  return Math.round((feet / 5280) * dPlace) / dPlace;
+};
+
+export const formatDate = date => {
+  return new Date(date).toLocaleString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric'
+  });
+};

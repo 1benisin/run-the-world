@@ -1,13 +1,11 @@
 import {
-  SAVE_RUN_REQUEST,
-  SAVE_RUN_SUCCESS,
-  SAVE_RUN_FAILURE,
   RUN_START_REQUEST,
   RUN_START_SUCCESS,
-  RUN_STOP_REQUEST,
-  RUN_STOP_SUCCESS,
-  RUN_STOP_FAILURE,
-  RUN_ADD_COORD_SUCCESS
+  RUN_SAVE_REQUEST,
+  RUN_SAVE_SUCCESS,
+  RUN_SAVE_FAILURE,
+  RUN_ADD_COORD_SUCCESS,
+  RUNS_FETCH_SUCCESS
 } from './actions';
 import {
   TERRITORY_CREATE_SUCCESS,
@@ -20,15 +18,16 @@ const initialState = {
   coordinates: [],
   startTime: null,
   endTime: null,
-  completedRun: null
+  completedRun: null,
+  userRuns: []
 };
 
 export default (state = initialState, action) => {
   //
   switch (action.type) {
     //
-    case SAVE_RUN_SUCCESS:
-      return state;
+    case RUNS_FETCH_SUCCESS:
+      return { ...state, userRuns: action.userRuns };
     //
     case TERRITORY_CREATE_SUCCESS:
       return { ...state, completedRun: null };
@@ -59,12 +58,13 @@ export default (state = initialState, action) => {
       };
 
     // RUN_STOP
-    case RUN_STOP_REQUEST:
+    case RUN_SAVE_REQUEST:
       return {
-        ...state
+        ...state,
+        completedRun: null
       };
 
-    case RUN_STOP_SUCCESS:
+    case RUN_SAVE_SUCCESS:
       return {
         ...state,
         isRunning: false,
@@ -74,7 +74,7 @@ export default (state = initialState, action) => {
         completedRun: action.newRun
       };
 
-    case RUN_STOP_FAILURE:
+    case RUN_SAVE_FAILURE:
       return {
         ...state,
         isRunning: false,

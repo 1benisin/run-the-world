@@ -21,6 +21,17 @@ export const pointsToRegion = points => {
   };
 };
 
+export const center = points => {
+  let minX, maxX, minY, maxY;
+  for (let i = 0; i < points.length; i++) {
+    minX = points[i][0] < minX || minX == null ? points[i][0] : minX;
+    maxX = points[i][0] > maxX || maxX == null ? points[i][0] : maxX;
+    minY = points[i][1] < minY || minY == null ? points[i][1] : minY;
+    maxY = points[i][1] > maxY || maxY == null ? points[i][1] : maxY;
+  }
+  return [(minX + maxX) / 2, (minY + maxY) / 2];
+};
+
 export const polysOverlap = (poly1, poly2) => {
   let overlap = false;
   for (let i = 0; i < poly1.length; i++) {
