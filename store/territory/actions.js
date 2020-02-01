@@ -69,21 +69,32 @@ export const createTerritory = () => {
         nonUserTerritories
       );
 
-      // add completed run to be upated
+      // create new territory from completed
       const newTerr = new Territory(
         completedRun.userId,
         completedRun.coords,
         Date.now()
       );
-      editedTerritories[Territory.uuid()] = newTerr;
+      newTerr.id = Territory.uuid();
 
-      // add old user Territories to be deleted
-      userTerritories.forEach(userTer => {
-        editedTerritories[userTer.id] = null;
-      });
+      // add old Territories to be deleted
+      let updatedTerritories = TerritoryEffects.convertTerritoriesToRegions(
+        [...userTerritories, ...nonUserTerritories],
+        {},
+        true
+      );
+      console.log('djb34', Object.keys(updatedTerritories));
+
+      // add new Territories to be created
+      updatedTerritories = TerritoryEffects.convertTerritoriesToRegions(
+        [...editedTerritories, newTerr],
+        updatedTerritories
+      );
+      console.log('466kf', Object.keys(updatedTerritories));
+      console.log('9ekd33', updatedTerritories);
 
       // update territories in database
-      await TerritoryEffects.editTerritories(editedTerritories);
+      await TerritoryEffects.updateDBTerritories(updatedTerritories);
 
       dispatch({ type: TERRITORY_CREATE_SUCCESS });
       dispatch(fetchTerritories());
@@ -101,7 +112,7 @@ export const fetchTerritories = () => {
   return async dispatch => {
     dispatch({ type: TERRITORIES_FETCH_REQUEST });
 
-    const territories = await TerritoryEffects.fetchTerritories();
+    const territories = await TerritoryEffects.fetchTerritoriesByRegion();
     const isError = territories instanceof AppError;
     if (isError) {
       dispatch(appErrorActions.createError(territories));

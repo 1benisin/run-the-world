@@ -3,11 +3,12 @@ const uuid = require('uuid');
 import { database } from '../../services/firebase';
 import Territory from './model';
 import * as polygonService from '../../services/polygons';
+import * as utils from '../../services/utils';
 
-export const fetchTerritories = async () => {
+export const fetchTerritoriesByRegion = async (regionId = '47:75,-122:25') => {
   try {
     const response = await (
-      await database.ref('territories').once('value')
+      await database.ref('territories/' + regionId).once('value')
     ).val();
     if (!response) return [];
 
@@ -63,35 +64,53 @@ export const uniteTerritories = (completedRun, territories) => {
 };
 
 export const subtractTerritories = (completedRun, nonUserTerritories) => {
-  const editedTerrs = {};
+  const newTerrs = [];
   nonUserTerritories.forEach(terr => {
     const alteredRegions = polygonService.difference(
       terr.coords,
       completedRun.coords
     );
 
-    // if territory completely conquered
-    if (alteredRegions.length === 0) {
-      editedTerrs[terr.id] = null;
-
-      // if territory partially conquered
-    } else if (alteredRegions.length === 1) {
-      editedTerrs[terr.id] = { ...terr, coords: alteredRegions[0] };
-
-      // if territory cut into multiple parts
-    } else {
-      editedTerrs[terr.id] = null;
-      alteredRegions.forEach(coords => {
-        const newTer = { ...terr, coords };
-        delete newTer.id;
-        editedTerrs[Territory.uuid()] = newTer;
-      });
-    }
+    alteredRegions.forEach(coords => {
+      const updateTerr = { ...terr, coords };
+      const newTerr = new Territory().initWithID(Territory.uuid(), updateTerr);
+      newTerrs.push(newTerr);
+    });
   });
-  return editedTerrs;
+
+  return newTerrs;
 };
 
-export const editTerritories = async editedTerritories => {
-  console.log('editedTerritories', editedTerritories);
+export const updateDBTerritories = async editedTerritories => {
   return await database.ref('territories').update(editedTerritories);
+};
+
+export const convertTerritoriesToRegions = (
+  territories = [],
+  regions = {},
+  deleteTerritories = false
+) => {
+  territories.forEach(terr => {
+    // get starting lat lng
+    let startLng = terr.center[1] - 0.25;
+    let startLat = terr.center[0] - 0.25;
+
+    // make region ids
+    const regionIds = [];
+    for (let i = 0; i < 3; i++) {
+      startLat = terr.center[0] - 0.25;
+
+      for (let k = 0; k < 3; k++) {
+        regionIds.push(utils.coordinateToRegionId([startLat, startLng]));
+        startLat += 0.25;
+      }
+      startLng += 0.25;
+    }
+
+    regionIds.forEach(id => {
+      regions[id + '/' + terr.id] = deleteTerritories ? null : terr.withoutId();
+    });
+  });
+
+  return regions;
 };

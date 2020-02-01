@@ -24,6 +24,21 @@ export const feetToMiles = (feet, decimalPlace) => {
   return Math.round((feet / 5280) * dPlace) / dPlace;
 };
 
+export const roundToQuarter = number => {
+  return (Math.round(number * 4) / 4).toFixed(2);
+};
+
+export const coordinateToRegionId = ([lat, lng]) => {
+  lat = roundToQuarter(lat);
+  lng = roundToQuarter(lng);
+  return `${lat},${lng}`.replace(/\./g, ':');
+};
+
+export const roundToDecimal = (number, decimalPlace) => {
+  const dPlace = decimalPlace ? decimalPlace : 10;
+  return Math.round(number * dPlace) / dPlace;
+};
+
 export const formatDate = date => {
   return new Date(date).toLocaleString(undefined, {
     weekday: 'short',
