@@ -39,6 +39,12 @@ class Territory {
 
     return this;
   }
+
+  withoutId() {
+    const terr = { ...this };
+    delete terr.id;
+    return terr;
+  }
 }
 
 export default Territory;

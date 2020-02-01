@@ -214,12 +214,10 @@ export const untwistPolygon = p => {
   // sanity check - first and last points of polygon can not be the same point
   // we are working with open ended polygons
   if (p[0][0] === p[p.length - 1][0] && p[0][1] === p[p.length - 1][1])
-    throw Error('First and last points of polygon cannot be the same point');
+    p[0][0] += 0.00001;
+
   // adds points at every intersection
   let polygon = flattenPolygon(p);
-
-  // TODO
-  // return polygon;
 
   // *-1-* find northern point
   let northernLat = polygon[0][0];
@@ -271,7 +269,7 @@ export const untwistPolygon = p => {
       reversePoly();
     }
   }
-  // TODO return polygon;
+
   // *-5-* move point to point looking for matching points - these signify intersections
   let newPoly = [];
   for (let i = 0; i < polygon.length; i++) {
@@ -280,7 +278,6 @@ export const untwistPolygon = p => {
 
     // check if point appears anywhere else in polygon
     for (let j = 0; j < polygon.length; j++) {
-      // TODO if (newPoly.length > 11) return newPoly;
       // skip if same point
       if (j === i) continue;
 
