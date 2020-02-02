@@ -5,7 +5,9 @@ import Territory from './model';
 import * as polygonService from '../../services/polygons';
 import * as utils from '../../services/utils';
 
-export const fetchTerritoriesByRegion = async (regionId = '47:75,-122:25') => {
+export const fetchTerritoriesByRegion = async (
+  regionId = 'lat47a75lng-122a00'
+) => {
   try {
     const response = await (
       await database.ref('territories/' + regionId).once('value')
@@ -54,6 +56,15 @@ export const checkRunInsideTerritory = (completedRun, territories) => {
 };
 
 export const untwistRunPoints = runPoly => {
+  // TODO delete testing
+  const testing = [
+    [47.65704464462624, -122.34229708767208],
+    [47.655584373698616, -122.34098026663901],
+    [47.65563305005415, -122.34266643991307],
+    [47.65702841961803, -122.34080361991501],
+    [47.657050052961125, -122.34229708767208]
+  ];
+  // return polygonService.untwistPolygon(testing);
   return polygonService.untwistPolygon(runPoly);
 };
 

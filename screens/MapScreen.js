@@ -43,6 +43,25 @@ const MapScreen = ({ navigation }) => {
   return (
     <View style={styles.screen}>
       <Map>
+        <Marker
+          coordinate={{
+            latitude: 47.655584373698616,
+            longitude: -122.34098026663901
+          }}
+        />
+        <Polygon
+          coordinates={polygonService.pointsToCoords([
+            [47.65704464462624, -122.34229708767208],
+            [47.655584373698616, -122.34098026663901],
+            [47.65563305005415, -122.34266643991307],
+            [47.65702841961803, -122.34080361991501],
+            [47.657050052961125, -122.34229708767208]
+          ])}
+          // strokeWidth={0}
+          // strokeColor="#000"
+          // fillColor={'rgba(255, 20, 0, 0.2)'}
+        />
+
         {territories.map(ter => (
           <Polygon
             key={ter.id}

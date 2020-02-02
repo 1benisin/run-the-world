@@ -211,14 +211,20 @@ export const flattenPolygon = p => {
 };
 
 export const untwistPolygon = p => {
+  // TODO remove log
+  const log = [];
   // sanity check - first and last points of polygon can not be the same point
   // we are working with open ended polygons
   if (p[0][0] === p[p.length - 1][0] && p[0][1] === p[p.length - 1][1])
     p[0][0] += 0.00001;
 
+  // TODO
+  log.push({ original: [...p] });
   // adds points at every intersection
   let polygon = flattenPolygon(p);
 
+  // TODO
+  log.push({ flattened: [...polygon] });
   // *-1-* find northern point
   let northernLat = polygon[0][0];
   let northernIndex = 0;
@@ -236,6 +242,8 @@ export const untwistPolygon = p => {
     ...polygon.slice(0, northernIndex)
   ];
 
+  // TODO
+  log.push({ northernpoint: [...polygon] });
   // *-3-* store a reversed copy of polygon for easy switching
   let reversedPolygon = [...polygon];
   const firstElement = reversedPolygon.shift();
@@ -251,30 +259,59 @@ export const untwistPolygon = p => {
   const prevCoord = polygon[polygon.length - 1];
   const nextCoord = polygon[1];
   const northernCoord = polygon[0];
+
   // if next coordinate is west and previous coordinate is east - reverse
-  if (prevCoord[1] > northernCoord[1] && nextCoord[1] < northernCoord[1]) {
+  if (prevCoord[1] >= northernCoord[1] && nextCoord[1] <= northernCoord[1]) {
     reversePoly();
-  }
-  // if both are to the east
-  if (prevCoord[1] > northernCoord[1] && nextCoord[1] > northernCoord[1]) {
-    // and next coordinate is further south - reverse
-    if (nextCoord[0] < prevCoord[0]) {
-      reversePoly();
+    // TODO
+    log.push({ hit: 1 });
+  } else {
+    // coords are on the same side (both east or both west of northern coord) - or prev,next,& northern coords all have the same longitude
+    const angleFromNorthernLng = coord => {
+      const minusVector = (a, b) => {
+        return [Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1])];
+      };
+      const vect = minusVector(northernCoord, coord);
+      // atan(opposite / adjacent)
+      return Math.atan(vect[1] / vect[0]);
+    };
+
+    // if both are to the east
+    if (prevCoord[1] >= northernCoord[1] && nextCoord[1] >= northernCoord[1]) {
+      // and nextCoord has a smaller angle to the northCood longitude
+      if (angleFromNorthernLng(prevCoord) > angleFromNorthernLng(nextCoord)) {
+        reversePoly();
+        // TODO
+        log.push({
+          hit: 2,
+          prevCoord,
+          prevAnlge: angleFromNorthernLng(prevCoord),
+          nextCoord,
+          nextAnlge: angleFromNorthernLng(nextCoord),
+          northernCoord
+        });
+      }
     }
-  }
-  // if both are to the west
-  if (prevCoord[1] < northernCoord[1] && nextCoord[1] < northernCoord[1]) {
-    // and next coordinate is further north - reverse
-    if (nextCoord[0] > prevCoord[0]) {
-      reversePoly();
+    // if both are to the west
+    if (prevCoord[1] <= northernCoord[1] && nextCoord[1] <= northernCoord[1]) {
+      // and nextCoord has a greater angle to the northCood longitude
+      if (angleFromNorthernLng(prevCoord) < angleFromNorthernLng(nextCoord)) {
+        reversePoly();
+        // TODO
+        log.push({ hit: 3 });
+      }
     }
   }
 
+  // TODO
+  log.push({ reverseToClockwise: [...polygon] });
   // *-5-* move point to point looking for matching points - these signify intersections
   let newPoly = [];
   for (let i = 0; i < polygon.length; i++) {
     const A = polygon[i];
     newPoly.push(A);
+    // TODO
+    log.push({ i, pointAdded: A, newPoly: [...newPoly] });
 
     // check if point appears anywhere else in polygon
     for (let j = 0; j < polygon.length; j++) {
@@ -286,7 +323,6 @@ export const untwistPolygon = p => {
       // *-6-* if you find an overlapping point
       if (A[0] === B[0] && A[1] === B[1]) {
         const beforeA = i === 0 ? polygon[polygon.length - 1] : polygon[i - 1];
-        const beforeB = j === 0 ? polygon[polygon.length - 1] : polygon[j - 1];
         const afterB = j === polygon.length - 1 ? polygon[0] : polygon[j + 1];
         // find which point is in the left direction
         const dir = directionOfPoint(beforeA, A, afterB);
@@ -306,6 +342,43 @@ export const untwistPolygon = p => {
       }
     }
   }
+
+  //  *-5-* seperate any point that are the same
+  const pointSet = new Set();
+  // TODO
+  // console.log('oldPoly', newPoly);
+
+  // loop over points to find matches
+  newPoly = newPoly.map((point, i) => {
+    const pString = point.toString();
+    if (!pointSet.has(pString)) {
+      pointSet.add(pString);
+      return point;
+    }
+
+    const vector2DDirection = (a, b) => {
+      const x = b[0] - a[0];
+      const y = b[1] - a[1];
+      const mag = Math.sqrt(x * x + y * y);
+      return mag > 0 ? [x / mag, y / mag] : [x, y];
+    };
+
+    // found matching point
+    const prevPoint = newPoly[i - 1];
+
+    // get a normalized unit vector in the direction of the last point
+    let dir = vector2DDirection(point, prevPoint);
+    const moveAmount = 0.00001;
+    dir = [dir[0] * moveAmount, dir[1] * moveAmount];
+    // adjust the point in that direction slightly
+    const adjustedPoint = [point[0] + dir[0], point[1] + dir[1]];
+    // add the adjusted point to the comparison set and return it
+    pointSet.add(adjustedPoint.toString());
+    return adjustedPoint;
+  });
+
+  // TODO
+  console.log('log', log);
   return newPoly;
 };
 

@@ -83,15 +83,17 @@ export const createTerritory = () => {
         {},
         true
       );
-      console.log('djb34', Object.keys(updatedTerritories));
+      //TODO
+      // console.log('djb34', Object.keys(updatedTerritories));
 
       // add new Territories to be created
       updatedTerritories = TerritoryEffects.convertTerritoriesToRegions(
         [...editedTerritories, newTerr],
         updatedTerritories
       );
-      console.log('466kf', Object.keys(updatedTerritories));
-      console.log('9ekd33', updatedTerritories);
+      //TODO
+      // console.log('466kf', Object.keys(updatedTerritories));
+      // console.log('9ekd33', updatedTerritories);
 
       // update territories in database
       await TerritoryEffects.updateDBTerritories(updatedTerritories);
