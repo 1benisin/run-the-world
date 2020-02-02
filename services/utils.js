@@ -31,7 +31,7 @@ export const roundToQuarter = number => {
 export const coordinateToRegionId = ([lat, lng]) => {
   lat = roundToQuarter(lat);
   lng = roundToQuarter(lng);
-  return `${lat},${lng}`.replace(/\./g, ':');
+  return `lat${lat}lng${lng}`.replace(/\./g, 'a');
 };
 
 export const roundToDecimal = (number, decimalPlace) => {

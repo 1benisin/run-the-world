@@ -11,29 +11,7 @@ import {
 import Territory from '../../models/territory';
 import * as testData from '../../fake-data/fake-data';
 
-const initialState = [
-  // {
-  //   id: '-LwQXgfP8s3ZPuxOQgNW',
-  //   coords: [
-  //     [47.61955778049896, -122.3398172110319],
-  //     [47.61649322606147, -122.34151739627123],
-  //     [47.616909466234596, -122.34720457999472],
-  //     [47.62007969289885, -122.34579954210191]
-  //   ],
-  //   dateCreated: 1576715078146,
-  //   dateModified: 1576715078146,
-  //   runs: ['-LwQXgfP8s3ZPuxOQgOP'],
-  //   userId: 'user3'
-  // },
-  // {
-  //   id: '-LwUN6fFACaGAHHUAkPP',
-  //   coords: testData.cross.horizontal,
-  //   dateCreated: 1576779413035,
-  //   dateModified: 1576779413035,
-  //   runs: ['-LwUN6dwI4UV3h5LzGQL'],
-  //   userId: 'user3'
-  // }
-];
+const initialState = [];
 
 export default (state = initialState, action) => {
   switch (action.type) {

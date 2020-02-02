@@ -28,10 +28,14 @@ const Map = props => {
     <MapView
       style={styles.map}
       initialRegion={{
-        latitude: 47.65,
-        longitude: -122.35282,
-        latitudeDelta: 0.06,
+        latitude: 47.656,
+        longitude: -122.342,
+        latitudeDelta: 0.007,
         longitudeDelta: 0.0000001
+        // latitude: 47.65,
+        // longitude: -122.35282,
+        // latitudeDelta: 0.06,
+        // longitudeDelta: 0.0000001
       }}
       onPress={simulateNewRunCoordinate}
       showsPointsOfInterest={false}

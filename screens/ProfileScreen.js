@@ -61,6 +61,7 @@ const ProfileScreen = ({ navigation }) => {
         <Subheading>Your Runs</Subheading>
         {userRuns.map(run => (
           <View style={styles.runCard} key={run.id}>
+            <Text>{run.id}</Text>
             <Text>{utils.formatDate(run.startTime)}</Text>
             <Text>{utils.feetToMiles(run.distance)} mi</Text>
           </View>
