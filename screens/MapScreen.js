@@ -11,6 +11,8 @@ import {
 import { FAB, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 import MapView, { Polygon, Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
+import * as TaskManager from 'expo-task-manager';
 
 import * as polygonService from '../services/polygons';
 import CurrentRun from '../components/CurrentRun';
@@ -19,9 +21,9 @@ import Map from '../components/Map';
 import Menu from '../components/Menu';
 import ErrorPopup from '../components/ErrorPopup';
 import * as runActions from '../store/run/actions';
-import * as territoryActions from '../store/territory/actions';
-import { auth } from '../services/firebase';
-import Run from '../store/run/model';
+import store from '../store/store';
+
+const GET_LOCATION_IN_BACKGROUND = 'GET_LOCATION_IN_BACKGROUND';
 
 const MapScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -32,6 +34,18 @@ const MapScreen = ({ navigation }) => {
   const error = useSelector(state => state.appError.error);
   const completedRun = useSelector(state => state.runs.completedRun);
 
+  useEffect(() => {
+    Location.startLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND, {
+      accuracy: Location.Accuracy.Balanced
+    });
+
+    console.log('start');
+
+    return () => {
+      Location.stopLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND);
+    };
+  }, []);
+
   const _onRunButtonPress = useCallback(async () => {
     if (isRunning) {
       dispatch(runActions.saveRun());
@@ -40,15 +54,25 @@ const MapScreen = ({ navigation }) => {
     }
   }, [dispatch, isRunning]);
 
+  const _toggleLocationUpdates = async () => {
+    const updatesStarted = await Location.hasStartedLocationUpdatesAsync(
+      GET_LOCATION_IN_BACKGROUND
+    );
+
+    if (!isRunning && updatesStarted) {
+      console.log('stop');
+      Location.stopLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND);
+    } else {
+      if (updatesStarted) {
+        console.log('start');
+      }
+    }
+    return;
+  };
+
   return (
     <View style={styles.screen}>
       <Map>
-        <Marker
-          coordinate={{
-            latitude: 47.655584373698616,
-            longitude: -122.34098026663901
-          }}
-        />
         <Polygon
           coordinates={polygonService.pointsToCoords([
             [47.65704464462624, -122.34229708767208],
@@ -103,3 +127,19 @@ const styles = StyleSheet.create({
 });
 
 export default MapScreen;
+
+TaskManager.defineTask(GET_LOCATION_IN_BACKGROUND, ({ data, error }) => {
+  console.log('location fetched');
+
+  if (error) {
+    // Error occurred - check `error.message` for more details.
+    console.warn(error);
+    return;
+  }
+  if (data && store.getState().runs.isRunning) {
+    const { latitude, longitude } = data.locations[0].coords;
+    console.log(latitude, longitude);
+    if (latitude && longitude)
+      store.dispatch(runActions.addCoord({ latitude, longitude }));
+  }
+});

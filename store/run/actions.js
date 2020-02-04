@@ -38,10 +38,17 @@ export const fetchUserRuns = () => {
 };
 
 export const addCoord = coord => {
-  return async dispatch => {
+  return async (dispatch, getState) => {
     dispatch({ type: RUN_ADD_COORD_REQUEST });
 
-    dispatch({ type: RUN_ADD_COORD_SUCCESS, coord });
+    const isRunning = getState().runs.isRunning;
+
+    if (isRunning) {
+      dispatch({ type: RUN_ADD_COORD_SUCCESS, coord });
+    } else {
+      dispatch({ type: RUN_ADD_COORD_FAILURE });
+    }
+
     return {};
   };
 };

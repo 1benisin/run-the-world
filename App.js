@@ -7,8 +7,6 @@ import NavigationRouter from './navigation/NavigationRouter';
 import store from './store/store';
 import theme from './constants/theme';
 
-import TestMap from './fake-data/TestMap';
-
 const App = () => {
   return (
     <StoreProvider store={store}>
