@@ -18,14 +18,22 @@ import * as Permissions from 'expo-permissions';
 import { FAB, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 
 import * as runActions from '../store/run/actions';
+import * as userActions from '../store/user/actions';
 import * as territoryActions from '../store/territory/actions';
+import store from '../store/store';
+
+const GET_LOCATION_IN_BACKGROUND = 'GET_LOCATION_IN_BACKGROUND';
 
 const Map = props => {
-  const [location, setLocation] = useState({
-    latitude: 47.65,
-    longitude: -122.35282
-  });
   const [locationDialogVisible, setLocationDialogVisible] = useState(false);
+  const [followingLocation, setFollowingLocation] = useState(true);
+  const location = useSelector(state => state.user.location);
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 47.65,
+    longitude: -122.35282,
+    latitudeDelta: 0.5,
+    longitudeDelta: 0.001
+  });
   const map = useRef(null);
   const dispatch = useDispatch();
   const isRunning = useSelector(state => state.runs.isRunning);
@@ -47,12 +55,17 @@ const Map = props => {
     }
 
     return () => {
+      Location.stopLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND);
       AppState.removeEventListener('change', _handleAppStateChange);
     };
   }, []);
 
   useEffect(() => {
-    // _animateToCurrentLocation();
+    if (followingLocation) {
+      _animateToCurrentLocation();
+    }
+
+    return () => {};
   }, [location]);
 
   const _handleAppStateChange = async appState => {
@@ -74,8 +87,9 @@ const Map = props => {
   const _getLocationAsync = async () => {
     const { status } = await Permissions.askAsync(Permissions.LOCATION);
     if (status === 'granted') {
-      let loc = await Location.getCurrentPositionAsync({});
-      setLocation(loc.coords);
+      await Location.startLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND, {
+        accuracy: Location.Accuracy.Balanced
+      });
       return;
     } else {
       console.warn('Permission to access location was denied');
@@ -118,14 +132,14 @@ const Map = props => {
         onMapReady={() => {}}
         showsUserLocation={true}
         style={styles.map}
-        initialRegion={{
-          latitude: location.latitude,
-          longitude: location.longitude,
-          latitudeDelta: 0.5,
-          longitudeDelta: 0.0000001
-        }}
+        initialRegion={mapRegion}
         // onPress={_simulateNewRunCoordinate}
         showsPointsOfInterest={false}
+        // followsUserLocation={followingLocation}
+        showsMyLocationButton={true}
+        zoomTapEnabled={false}
+        loadingEnabled={true}
+        onRegionChange={() => setFollowingLocation(false)}
       >
         {props.children}
       </MapView>
@@ -133,7 +147,7 @@ const Map = props => {
       <FAB
         icon="crosshairs-gps"
         style={styles.locationButton}
-        onPress={_animateToCurrentLocation}
+        onPress={() => setFollowingLocation(true)}
         small
       />
 
@@ -176,16 +190,15 @@ const styles = StyleSheet.create({
 
 export default Map;
 
-// TaskManager.defineTask(LOCATION_TASK_NAME, ({ data, error }) => {
-//   if (error) {
-//     // Error occurred - check `error.message` for more details.
-//     console.warn(error);
-//     return;
-//   }
-//   if (data) {
-//     const { latitude, longitude } = data.locations[0].coords;
-//     store.dispatch(runActions.addCoord({ latitude, longitude }));
-//     console.log('dispatched addCoord');
-//     // do something with the locations captured in the background
-//   }
-// });
+TaskManager.defineTask(GET_LOCATION_IN_BACKGROUND, ({ data, error }) => {
+  if (error) {
+    // Error occurred - check `error.message` for more details.
+    console.warn(error);
+    return;
+  }
+  if (data) {
+    const { latitude, longitude } = data.locations[0].coords;
+    if (latitude && longitude)
+      store.dispatch(userActions.setUsersLocation({ latitude, longitude }));
+  }
+});

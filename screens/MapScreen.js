@@ -23,8 +23,6 @@ import ErrorPopup from '../components/ErrorPopup';
 import * as runActions from '../store/run/actions';
 import store from '../store/store';
 
-const GET_LOCATION_IN_BACKGROUND = 'GET_LOCATION_IN_BACKGROUND';
-
 const MapScreen = ({ navigation }) => {
   const dispatch = useDispatch();
 
@@ -34,18 +32,6 @@ const MapScreen = ({ navigation }) => {
   const error = useSelector(state => state.appError.error);
   const completedRun = useSelector(state => state.runs.completedRun);
 
-  useEffect(() => {
-    Location.startLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND, {
-      accuracy: Location.Accuracy.Balanced
-    });
-
-    console.log('start');
-
-    return () => {
-      Location.stopLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND);
-    };
-  }, []);
-
   const _onRunButtonPress = useCallback(async () => {
     if (isRunning) {
       dispatch(runActions.saveRun());
@@ -53,22 +39,6 @@ const MapScreen = ({ navigation }) => {
       dispatch(runActions.startRun());
     }
   }, [dispatch, isRunning]);
-
-  const _toggleLocationUpdates = async () => {
-    const updatesStarted = await Location.hasStartedLocationUpdatesAsync(
-      GET_LOCATION_IN_BACKGROUND
-    );
-
-    if (!isRunning && updatesStarted) {
-      console.log('stop');
-      Location.stopLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND);
-    } else {
-      if (updatesStarted) {
-        console.log('start');
-      }
-    }
-    return;
-  };
 
   return (
     <View style={styles.screen}>
@@ -127,19 +97,3 @@ const styles = StyleSheet.create({
 });
 
 export default MapScreen;
-
-TaskManager.defineTask(GET_LOCATION_IN_BACKGROUND, ({ data, error }) => {
-  console.log('location fetched');
-
-  if (error) {
-    // Error occurred - check `error.message` for more details.
-    console.warn(error);
-    return;
-  }
-  if (data && store.getState().runs.isRunning) {
-    const { latitude, longitude } = data.locations[0].coords;
-    console.log(latitude, longitude);
-    if (latitude && longitude)
-      store.dispatch(runActions.addCoord({ latitude, longitude }));
-  }
-});
