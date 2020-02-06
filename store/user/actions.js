@@ -1,5 +1,6 @@
 export const LOGIN_USER = 'LOGIN_USER';
 export const LOGOUT_USER = 'LOGOUT_USER';
+export const USER_SET_LOCATION = 'USER_SET_LOCATION';
 
 import { auth, database } from '../../services/firebase';
 import theme from '../../constants/theme';
@@ -44,4 +45,8 @@ export const logOutUser = () => {
 
     dispatch({ type: LOGOUT_USER });
   };
+};
+
+export const setUsersLocation = coord => {
+  return { type: USER_SET_LOCATION, coord };
 };

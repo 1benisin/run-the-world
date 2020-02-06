@@ -3,6 +3,8 @@ import { StyleSheet } from 'react-native';
 import { Polygon } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
 
+import store from '../store/store';
+import * as runActions from '../store/run/actions';
 import * as territoryActions from '../store/territory/actions';
 
 const CurrentRun = () => {

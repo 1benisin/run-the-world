@@ -11,6 +11,8 @@ import {
 import { FAB, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
 import MapView, { Polygon, Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
+import * as TaskManager from 'expo-task-manager';
 
 import * as polygonService from '../services/polygons';
 import CurrentRun from '../components/CurrentRun';
@@ -19,9 +21,7 @@ import Map from '../components/Map';
 import Menu from '../components/Menu';
 import ErrorPopup from '../components/ErrorPopup';
 import * as runActions from '../store/run/actions';
-import * as territoryActions from '../store/territory/actions';
-import { auth } from '../services/firebase';
-import Run from '../store/run/model';
+import store from '../store/store';
 
 const MapScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -43,12 +43,6 @@ const MapScreen = ({ navigation }) => {
   return (
     <View style={styles.screen}>
       <Map>
-        <Marker
-          coordinate={{
-            latitude: 47.655584373698616,
-            longitude: -122.34098026663901
-          }}
-        />
         <Polygon
           coordinates={polygonService.pointsToCoords([
             [47.65704464462624, -122.34229708767208],
