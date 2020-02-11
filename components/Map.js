@@ -29,9 +29,9 @@ const Map = props => {
   const [followingLocation, setFollowingLocation] = useState(true);
   const location = useSelector(state => state.user.location);
   const [mapRegion, setMapRegion] = useState({
-    latitude: 47.65,
-    longitude: -122.35282,
-    latitudeDelta: 0.5,
+    latitude: 47.618554776633864,
+    longitude: -122.35166501227786,
+    latitudeDelta: 0.005,
     longitudeDelta: 0.001
   });
   const map = useRef(null);
@@ -60,13 +60,13 @@ const Map = props => {
     };
   }, []);
 
-  useEffect(() => {
-    if (followingLocation) {
-      _animateToCurrentLocation();
-    }
+  // useEffect(() => {
+  //   if (followingLocation) {
+  //     _animateToCurrentLocation();
+  //   }
 
-    return () => {};
-  }, [location]);
+  //   return () => {};
+  // }, [location]);
 
   const _handleAppStateChange = async appState => {
     if (appState === 'active') {
@@ -88,7 +88,8 @@ const Map = props => {
     const { status } = await Permissions.askAsync(Permissions.LOCATION);
     if (status === 'granted') {
       await Location.startLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND, {
-        accuracy: Location.Accuracy.Balanced
+        accuracy: Location.Accuracy.High,
+        showsBackgroundLocationIndicator: true
       });
       return;
     } else {
@@ -118,8 +119,8 @@ const Map = props => {
         {
           latitude: location.latitude,
           longitude: location.longitude,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05
+          latitudeDelta: 0.03,
+          longitudeDelta: 0.03
         },
         1000
       );
@@ -136,10 +137,10 @@ const Map = props => {
         // onPress={_simulateNewRunCoordinate}
         showsPointsOfInterest={false}
         // followsUserLocation={followingLocation}
-        showsMyLocationButton={true}
+        // showsMyLocationButton={true}
         zoomTapEnabled={false}
         loadingEnabled={true}
-        onRegionChange={() => setFollowingLocation(false)}
+        // onRegionChange={() => setFollowingLocation(false)}
       >
         {props.children}
       </MapView>
@@ -147,7 +148,8 @@ const Map = props => {
       <FAB
         icon="crosshairs-gps"
         style={styles.locationButton}
-        onPress={() => setFollowingLocation(true)}
+        onPress={_animateToCurrentLocation}
+        // onPress={() => setFollowingLocation(true)}
         small
       />
 
@@ -197,8 +199,9 @@ TaskManager.defineTask(GET_LOCATION_IN_BACKGROUND, ({ data, error }) => {
     return;
   }
   if (data) {
-    const { latitude, longitude } = data.locations[0].coords;
-    if (latitude && longitude)
-      store.dispatch(userActions.setUsersLocation({ latitude, longitude }));
+    data.locations.forEach(loc => {
+      const coords = { ...loc.coords, timestamp: loc.timestamp };
+      store.dispatch(userActions.setUsersLocation(coords));
+    });
   }
 });

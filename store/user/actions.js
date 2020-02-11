@@ -5,6 +5,7 @@ export const USER_SET_LOCATION = 'USER_SET_LOCATION';
 import { auth, database } from '../../services/firebase';
 import theme from '../../constants/theme';
 import User from './model';
+import * as runActions from '../run/actions';
 
 export const logInUser = authUserData => {
   return async dispatch => {
@@ -48,5 +49,12 @@ export const logOutUser = () => {
 };
 
 export const setUsersLocation = coord => {
-  return { type: USER_SET_LOCATION, coord };
+  // return { type: USER_SET_LOCATION, coord };
+  return async (dispatch, getState) => {
+    dispatch({ type: USER_SET_LOCATION, coord });
+
+    dispatch(runActions.addCoord(coord));
+
+    return {};
+  };
 };
