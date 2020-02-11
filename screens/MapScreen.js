@@ -22,6 +22,8 @@ import Menu from '../components/Menu';
 import ErrorPopup from '../components/ErrorPopup';
 import * as runActions from '../store/run/actions';
 import store from '../store/store';
+import noiseyRun from '../fake-data/noiseyRun';
+import runKalmanOnLocations from '../services/kalman';
 
 const MapScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -43,18 +45,13 @@ const MapScreen = ({ navigation }) => {
   return (
     <View style={styles.screen}>
       <Map>
-        <Polygon
-          coordinates={polygonService.pointsToCoords([
-            [47.65704464462624, -122.34229708767208],
-            [47.655584373698616, -122.34098026663901],
-            [47.65563305005415, -122.34266643991307],
-            [47.65702841961803, -122.34080361991501],
-            [47.657050052961125, -122.34229708767208]
-          ])}
-          // strokeWidth={0}
+        {/* <Polygon
+          coordinates={runKalmanOnLocations(noiseyRun.slice(), 1000)}
+          // coordinates={noiseyRun}
+          strokeWidth={4}
           // strokeColor="#000"
           // fillColor={'rgba(255, 20, 0, 0.2)'}
-        />
+        /> */}
 
         {territories.map(ter => (
           <Polygon

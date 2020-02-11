@@ -71,7 +71,16 @@ export const saveRun = (ignoreError = false) => {
     dispatch({ type: RUN_SAVE_REQUEST });
 
     const endTime = Date.now();
-    const { coordinates, startTime } = getState().runs;
+    let { coordinates, startTime } = getState().runs;
+
+    // TODO delete
+    await database.ref('debug/' + Date.now()).set(coordinates);
+    console.log('coordinates', coordinates);
+    coordinates = coordinates.map(coord => {
+      return { latitude: coord.latitude, longitude: coord.longitude };
+    });
+    // delete
+
     const userId = getState().user.id;
 
     // Effect - convert coords to points

@@ -22,7 +22,7 @@ const MainNavigationRouter = createStackNavigator(
   {
     initialRouteName: 'LoadingScreen',
     headerMode: 'none',
-    navigationOptions: {
+    defaultNavigationOptions: {
       gesturesEnabled: false
     }
   }
