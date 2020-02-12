@@ -48,7 +48,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
       <Logo />
 
-      <Headline>Restore Password</Headline>
+      <Headline>Reset Password</Headline>
 
       <TextInput
         label="E-mail address"
@@ -65,7 +65,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
       <FAB
         label="Send Reset Instructions"
-        icon="plus"
+        icon="email"
         loading={loading}
         onPress={_onSendPressed}
         style={styles.button}

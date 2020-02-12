@@ -33,7 +33,8 @@
     "uuid": "^3.4.0",
     "expo-location": "~7.0.0",
     "expo-task-manager": "~7.0.0",
-    "expo-intent-launcher": "~7.0.0"
+    "expo-intent-launcher": "~7.0.0",
+    "expo-av": "~7.0.1"
   },
   "devDependencies": {
     "babel-preset-expo": "^7.1.0",
