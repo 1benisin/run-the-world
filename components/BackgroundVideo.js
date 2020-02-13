@@ -9,8 +9,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Video } from 'expo-av';
 
 import theme from '../constants/theme';
-import backgroundVideo from '../assets/loginBackground720Medium.mp4';
-import backgroundImage from '../assets/loginBackgroundCover2.jpg';
+import backgroundVideo from '../assets/loginBackground.mp4';
+import backgroundImage from '../assets/loginBackgroundCover.jpg';
 
 const Background = ({ children }) => {
   const videoRef = useRef(null);
