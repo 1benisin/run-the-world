@@ -4,7 +4,8 @@ import {
   View,
   KeyboardAvoidingView,
   TouchableOpacity,
-  Dimensions
+  Dimensions,
+  SafeAreaView
 } from 'react-native';
 import {
   Headline,
@@ -16,11 +17,13 @@ import {
 } from 'react-native-paper';
 
 import TextInput from '../components/TextInput';
-import Background from '../components/Background';
+import BackgroundVideo from '../components/BackgroundVideo';
 import Logo from '../components/Logo';
 import NotificationPopup from '../components/NotificationPopup';
+import ButtonRounded from '../components/ButtonRounded';
 import { emailValidator, passwordValidator } from '../services/utils';
 import { loginWithEmail, loginWithFacebook } from '../services/auth';
+import theme from '../constants/theme';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState({ value: '', error: '' });
@@ -57,83 +60,132 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <Background>
-      <View style={styles.viewContainer}>
-        <Headline>Are You Ready To</Headline>
-        <Headline>Run The World?</Headline>
-        <Logo style={styles.logo} />
-        <TextInput
-          label="Email"
-          returnKeyType="next"
-          value={email.value}
-          onChangeText={text => setEmail({ value: text, error: '' })}
-          error={!!email.error}
-          errorText={email.error}
-          autoCapitalize="none"
-          autoCompleteType="email"
-          textContentType="emailAddress"
-          keyboardType="email-address"
-        />
+    <View style={styles.container}>
+      <BackgroundVideo />
 
-        <TextInput
-          label="Password"
-          returnKeyType="done"
-          value={password.value}
-          onChangeText={text => setPassword({ value: text, error: '' })}
-          error={!!password.error}
-          errorText={password.error}
-          secureTextEntry
-          autoCapitalize="none"
-        />
+      <SafeAreaView style={styles.default}>
+        <KeyboardAvoidingView style={styles.viewContainer}>
+          <View style={styles.header}>
+            <Headline>Ready To</Headline>
+            <Headline>Run The World?</Headline>
+            <Logo style={styles.logo} />
+          </View>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate('ForgotPasswordScreen')}
-        >
-          <Text>Forgot Password?</Text>
-        </TouchableOpacity>
+          <View style={styles.content}>
+            <TextInput
+              label="Email"
+              returnKeyType="done"
+              value={email.value}
+              onChangeText={text => setEmail({ value: text, error: '' })}
+              error={!!email.error}
+              errorText={email.error}
+              autoCapitalize="none"
+              autoCompleteType="email"
+              textContentType="emailAddress"
+              keyboardType="email-address"
+            />
 
-        <Button
-          loading={loading}
-          mode="contained"
-          onPress={_onLoginPressed}
-          style={styles.signInButton}
-        >
-          Sign in
-        </Button>
+            <TextInput
+              label="Password"
+              returnKeyType="done"
+              value={password.value}
+              onChangeText={text => setPassword({ value: text, error: '' })}
+              error={!!password.error}
+              errorText={password.error}
+              secureTextEntry
+              autoCapitalize="none"
+            />
 
-        <Text>Or With</Text>
+            <TouchableOpacity
+              style={styles.forgotPassword}
+              onPress={() => navigation.navigate('ForgotPasswordScreen')}
+            >
+              <Text style={styles.clickableText}>Forgot Password?</Text>
+            </TouchableOpacity>
 
-        <Button mode="outlined" onPress={loginWithFacebook}>
-          Facebook
-        </Button>
+            <ButtonRounded
+              style={styles.loginButton}
+              loading={loading}
+              onPress={_onLoginPressed}
+            >
+              Sign in
+            </ButtonRounded>
 
-        <View style={styles.row}>
-          <Text>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('SignUpScreen')}>
-            <Text>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
+            <Text>Or With</Text>
 
-        <NotificationPopup message={error} onDismiss={() => setError('')} />
-      </View>
-    </Background>
+            <ButtonRounded
+              onPress={loginWithFacebook}
+              style={styles.facebookButton}
+            >
+              Facebook
+            </ButtonRounded>
+          </View>
+
+          <View style={styles.row}>
+            <Text>Don't have an account? </Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('SignUpScreen')}
+            >
+              <Text style={styles.clickableText}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+      <NotificationPopup message={error} onDismiss={() => setError('')} />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center'
+  },
+  default: {
+    flex: 1,
+    alignItems: 'center',
+    width: '100%'
+  },
   viewContainer: {
     flex: 1,
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
     width: '90%'
+
+    // backgroundColor: 'pink'
+  },
+  header: {
+    // flex: 1,
+    // backgroundColor: 'blue',
+    height: '30%',
+    width: '100%',
+    alignItems: 'center'
+    // justifyContent: 'space-around'
+  },
+  content: {
+    width: '100%',
+    alignItems: 'center'
   },
   logo: {
-    height: Dimensions.get('window').height / 5,
+    height: '70%',
+    // height: Dimensions.get('window').height / 5,
     resizeMode: 'contain'
   },
-  signInButton: {
-    borderRadius: 30,
-    width: '100%'
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    padding: 5
+  },
+  clickableText: {
+    color: theme.colors.accent,
+    textDecorationLine: 'underline'
+    // textDecorationStyle: 'solid'
+  },
+  loginButton: {
+    width: '80%'
+  },
+  facebookButton: {
+    width: '80%',
+    backgroundColor: theme.colors.primary
   },
   screen: {
     flex: 1,
@@ -143,7 +195,11 @@ const styles = StyleSheet.create({
     width: '80%'
   },
   row: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    bottom: 10
+  },
+  whiteText: {
+    color: 'white'
   }
 });
 

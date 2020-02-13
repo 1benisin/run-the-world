@@ -2,7 +2,7 @@ import React, { memo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Headline, FAB } from 'react-native-paper';
 
-import Background from '../components/Background';
+import BackgroundVideo from '../components/BackgroundVideo';
 import Logo from '../components/Logo';
 import TextInput from '../components/TextInput';
 import BackButton from '../components/BackButton';
@@ -52,7 +52,8 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <Background>
+    <View>
+      <BackgroundVideo />
       <BackButton navigation={navigation} />
 
       <Logo />
@@ -110,7 +111,7 @@ const RegisterScreen = ({ navigation }) => {
       </View>
 
       <NotificationPopup message={error} onDismiss={() => setError('')} />
-    </Background>
+    </View>
   );
 };
 

@@ -1,8 +1,8 @@
 import React, { memo, useState } from 'react';
-import { Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Headline, FAB } from 'react-native-paper';
 
-import Background from '../components/Background';
+import BackgroundVideo from '../components/BackgroundVideo';
 import BackButton from '../components/BackButton';
 import Logo from '../components/Logo';
 import TextInput from '../components/TextInput';
@@ -43,7 +43,8 @@ const ForgotPasswordScreen = ({ navigation }) => {
   };
 
   return (
-    <Background>
+    <View>
+      <BackgroundVideo />
       <BackButton navigation={navigation} />
 
       <Logo />
@@ -76,7 +77,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
         message={toast.value}
         onDismiss={() => setToast({ value: '', type: '' })}
       />
-    </Background>
+    </View>
   );
 };
 
