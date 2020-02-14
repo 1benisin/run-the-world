@@ -19,7 +19,7 @@ const ButtonRounded = props => {
 const styles = StyleSheet.create({
   button: {
     borderRadius: 30,
-    padding: 3,
+    padding: 5,
     margin: 5,
     backgroundColor: theme.colors.accent
   }

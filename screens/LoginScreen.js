@@ -4,17 +4,9 @@ import {
   View,
   KeyboardAvoidingView,
   TouchableOpacity,
-  Dimensions,
   SafeAreaView
 } from 'react-native';
-import {
-  Headline,
-  Title,
-  Button,
-  Divider,
-  Text,
-  Subheading
-} from 'react-native-paper';
+import { Headline, Text } from 'react-native-paper';
 
 import TextInput from '../components/TextInput';
 import BackgroundVideo from '../components/BackgroundVideo';
@@ -60,15 +52,17 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <BackgroundVideo />
-
-      <SafeAreaView style={styles.default}>
-        <KeyboardAvoidingView style={styles.viewContainer}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.inner}>
           <View style={styles.header}>
             <Headline>Ready To</Headline>
             <Headline>Run The World?</Headline>
-            <Logo style={styles.logo} />
+
+            <View style={styles.logoContainer}>
+              <Logo />
+            </View>
           </View>
 
           <View style={styles.content}>
@@ -100,7 +94,7 @@ const LoginScreen = ({ navigation }) => {
               style={styles.forgotPassword}
               onPress={() => navigation.navigate('ForgotPasswordScreen')}
             >
-              <Text style={styles.clickableText}>Forgot Password?</Text>
+              <Text style={styles.link}>Forgot Password?</Text>
             </TouchableOpacity>
 
             <ButtonRounded
@@ -121,71 +115,61 @@ const LoginScreen = ({ navigation }) => {
             </ButtonRounded>
           </View>
 
+          <View style={{ flex: 1 }} />
+
           <View style={styles.row}>
             <Text>Don't have an account? </Text>
             <TouchableOpacity
               onPress={() => navigation.navigate('SignUpScreen')}
             >
-              <Text style={styles.clickableText}>Sign Up</Text>
+              <Text style={styles.link}>Sign Up</Text>
             </TouchableOpacity>
           </View>
-        </KeyboardAvoidingView>
+        </View>
       </SafeAreaView>
       <NotificationPopup message={error} onDismiss={() => setError('')} />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFill,
-    alignItems: 'center'
-  },
-  default: {
+  inner: {
     flex: 1,
+    alignSelf: 'center',
     alignItems: 'center',
-    width: '100%'
-  },
-  viewContainer: {
-    flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
     width: '90%'
-
-    // backgroundColor: 'pink'
   },
   header: {
-    // flex: 1,
-    // backgroundColor: 'blue',
-    height: '30%',
+    height: '40%',
     width: '100%',
-    alignItems: 'center'
-    // justifyContent: 'space-around'
+    alignItems: 'center',
+    justifyContent: 'flex-end'
   },
   content: {
     width: '100%',
     alignItems: 'center'
   },
-  logo: {
+  logoContainer: {
     height: '70%',
-    // height: Dimensions.get('window').height / 5,
-    resizeMode: 'contain'
+    alignItems: 'center',
+    width: '100%'
   },
   forgotPassword: {
     alignSelf: 'flex-end',
     padding: 5
   },
-  clickableText: {
+  link: {
     color: theme.colors.accent,
-    textDecorationLine: 'underline'
-    // textDecorationStyle: 'solid'
+    fontWeight: 'bold'
   },
   loginButton: {
     width: '80%'
   },
   facebookButton: {
     width: '80%',
-    backgroundColor: theme.colors.primary
+    backgroundColor: theme.colors.primary,
+    marginVertical: 10
   },
   screen: {
     flex: 1,
@@ -196,7 +180,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    bottom: 10
+    marginVertical: 10
   },
   whiteText: {
     color: 'white'

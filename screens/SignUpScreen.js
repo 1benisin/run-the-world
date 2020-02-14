@@ -1,11 +1,19 @@
 import React, { memo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  SafeAreaView
+} from 'react-native';
 import { Headline, FAB } from 'react-native-paper';
 
 import BackgroundVideo from '../components/BackgroundVideo';
 import Logo from '../components/Logo';
 import TextInput from '../components/TextInput';
 import BackButton from '../components/BackButton';
+import ButtonRounded from '../components/ButtonRounded';
 import theme from '../constants/theme';
 import {
   emailValidator,
@@ -52,83 +60,124 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <BackgroundVideo />
-      <BackButton navigation={navigation} />
 
-      <Logo />
-
-      <Headline>Create Account</Headline>
-
-      <TextInput
-        label="Name"
-        returnKeyType="next"
-        value={name.value}
-        onChangeText={text => setName({ value: text, error: '' })}
-        error={!!name.error}
-        errorText={name.error}
-      />
-
-      <TextInput
-        label="Email"
-        returnKeyType="next"
-        value={email.value}
-        onChangeText={text => setEmail({ value: text, error: '' })}
-        error={!!email.error}
-        errorText={email.error}
-        autoCapitalize="none"
-        autoCompleteType="email"
-        textContentType="emailAddress"
-        keyboardType="email-address"
-      />
-
-      <TextInput
-        label="Password"
-        returnKeyType="done"
-        value={password.value}
-        onChangeText={text => setPassword({ value: text, error: '' })}
-        error={!!password.error}
-        errorText={password.error}
-        secureTextEntry
-        autoCapitalize="none"
-      />
-
-      <FAB
-        label="Sign Up"
-        icon="plus"
-        loading={loading}
-        onPress={_onSignUpPressed}
-        style={styles.button}
+      <KeyboardAvoidingView
+        style={styles.avoidingView}
+        behavior="height"
+        // keyboardVerticalOffset={100}
+        enabled
       >
-        Sign Up
-      </FAB>
+        <SafeAreaView style={styles.content}>
+          <View style={styles.logoContainer}>
+            <Logo />
+          </View>
 
-      <View style={styles.row}>
-        <Text style={styles.label}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
-          <Text style={styles.link}>Login</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.form}>
+            <Headline>Create Account</Headline>
 
+            <TextInput
+              label="User Name"
+              returnKeyType="next"
+              value={name.value}
+              onChangeText={text => setName({ value: text, error: '' })}
+              error={!!name.error}
+              errorText={name.error}
+            />
+
+            <TextInput
+              label="Email"
+              returnKeyType="next"
+              value={email.value}
+              onChangeText={text => setEmail({ value: text, error: '' })}
+              error={!!email.error}
+              errorText={email.error}
+              autoCapitalize="none"
+              autoCompleteType="email"
+              textContentType="emailAddress"
+              keyboardType="email-address"
+            />
+
+            <TextInput
+              label="Password"
+              returnKeyType="done"
+              value={password.value}
+              onChangeText={text => setPassword({ value: text, error: '' })}
+              error={!!password.error}
+              errorText={password.error}
+              secureTextEntry
+              autoCapitalize="none"
+            />
+
+            <ButtonRounded
+              loading={loading}
+              onPress={_onSignUpPressed}
+              style={styles.button}
+            >
+              Sign Up
+            </ButtonRounded>
+          </View>
+
+          <View style={styles.row}>
+            <Text>Already have an account? </Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('LoginScreen')}
+            >
+              <Text style={styles.link}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+
+      <BackButton navigation={navigation} />
       <NotificationPopup message={error} onDismiss={() => setError('')} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  label: {
-    color: theme.colors.secondary
+  container: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center'
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    width: '100%'
+  },
+
+  avoidingView: {
+    flex: 1,
+    alignItems: 'center',
+    width: '90%'
+    // justifyContent: 'center'
+    // backgroundColor: 'pink'
+  },
+  logoContainer: {
+    flex: 1,
+    height: '50%',
+    alignItems: 'center',
+    width: '100%'
+    // backgroundColor: 'blue'
+  },
+  form: {
+    flex: 1,
+    alignItems: 'center',
+    width: '100%'
+    // marginTop: 20
+    // backgroundColor: 'purple'
   },
   button: {
-    marginTop: 24
+    width: '80%'
   },
   row: {
     flexDirection: 'row',
-    marginTop: 4
+    bottom: 10
   },
   link: {
-    fontWeight: 'bold',
-    color: theme.colors.primary
+    color: theme.colors.accent,
+    fontWeight: 'bold'
   }
 });
 
