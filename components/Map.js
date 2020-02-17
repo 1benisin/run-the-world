@@ -46,56 +46,71 @@ const Map = props => {
     dispatch(territoryActions.fetchTerritories());
 
     // get location
-    if (Platform.OS === 'android' && !Constants.isDevice) {
-      console.warn(
-        'Oops, this will not work on Sketch in an Android emulator. Try it on your device!'
-      );
-    } else {
-      _getLocationAsync();
-    }
+    // if (Platform.OS === 'android' && !Constants.isDevice) {
+    //   console.warn(
+    //     'Oops, this will not work on Sketch in an Android emulator. Try it on your device!'
+    //   );
+    // } else {
+    //   _startFetchingLocationAsync();
+    // }
 
     return () => {
-      Location.stopLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND);
+      // Location.stopLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND);
       AppState.removeEventListener('change', _handleAppStateChange);
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (followingLocation) {
-  //     _animateToCurrentLocation();
-  //   }
+  useEffect(() => {
+    if (isRunning) {
+      _startFetchingLocationAsync();
+    } else {
+      _stopFetchingLocationAsync();
+    }
 
-  //   return () => {};
-  // }, [location]);
+    return () => {
+      _stopFetchingLocationAsync();
+    };
+  }, [isRunning]);
 
-  const _handleAppStateChange = async appState => {
-    if (appState === 'active') {
-      console.log('App has come to the foreground!');
-
-      const { status } = await Permissions.askAsync(Permissions.LOCATION);
-      if (status === 'granted') {
-        _getLocationAsync();
-        return;
-      } else {
-        console.warn('Permission to access location was denied');
-        setLocationDialogVisible(true);
-        return;
-      }
+  const _stopFetchingLocationAsync = async () => {
+    const taskRegistered = await TaskManager.isTaskRegisteredAsync(
+      GET_LOCATION_IN_BACKGROUND
+    );
+    if (taskRegistered) {
+      console.log('stop location tracking');
+      Location.stopLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND);
     }
   };
 
-  const _getLocationAsync = async () => {
+  const _startFetchingLocationAsync = async () => {
     const { status } = await Permissions.askAsync(Permissions.LOCATION);
     if (status === 'granted') {
       await Location.startLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND, {
         accuracy: Location.Accuracy.High,
         showsBackgroundLocationIndicator: true
       });
-      return;
+      return status;
     } else {
       console.warn('Permission to access location was denied');
       setLocationDialogVisible(true);
       return;
+    }
+  };
+
+  const _handleAppStateChange = async appState => {
+    if (appState === 'active') {
+      console.log('App has come to the foreground!');
+
+      // hide or show prompt for user to grant location permissions
+      const { status } = await Permissions.askAsync(Permissions.LOCATION);
+      if (status === 'granted') {
+        setLocationDialogVisible(false);
+        return;
+      } else {
+        console.warn('Permission to access location was denied');
+        setLocationDialogVisible(true);
+        return;
+      }
     }
   };
 
@@ -119,8 +134,8 @@ const Map = props => {
         {
           latitude: location.latitude,
           longitude: location.longitude,
-          latitudeDelta: 0.03,
-          longitudeDelta: 0.03
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02
         },
         1000
       );
@@ -199,6 +214,7 @@ TaskManager.defineTask(GET_LOCATION_IN_BACKGROUND, ({ data, error }) => {
     return;
   }
   if (data) {
+    console.log(data.locations[0].coords);
     data.locations.forEach(loc => {
       const coords = { ...loc.coords, timestamp: loc.timestamp };
       store.dispatch(userActions.setUsersLocation(coords));

@@ -60,21 +60,15 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <BackgroundVideo />
-
-      <KeyboardAvoidingView
-        style={styles.avoidingView}
-        behavior="height"
-        // keyboardVerticalOffset={100}
-        enabled
-      >
-        <SafeAreaView style={styles.content}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.inner}>
           <View style={styles.logoContainer}>
             <Logo />
           </View>
 
-          <View style={styles.form}>
+          <View style={styles.content}>
             <Headline>Create Account</Headline>
 
             <TextInput
@@ -119,6 +113,8 @@ const RegisterScreen = ({ navigation }) => {
             </ButtonRounded>
           </View>
 
+          <View style={{ flex: 1 }} />
+
           <View style={styles.row}>
             <Text>Already have an account? </Text>
             <TouchableOpacity
@@ -127,53 +123,39 @@ const RegisterScreen = ({ navigation }) => {
               <Text style={styles.link}>Login</Text>
             </TouchableOpacity>
           </View>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+        </View>
+      </SafeAreaView>
 
       <BackButton navigation={navigation} />
       <NotificationPopup message={error} onDismiss={() => setError('')} />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFill,
-    alignItems: 'center'
+  inner: {
+    flex: 1,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    width: '90%'
   },
   content: {
-    flex: 1,
     alignItems: 'center',
     width: '100%'
-  },
-
-  avoidingView: {
-    flex: 1,
-    alignItems: 'center',
-    width: '90%'
-    // justifyContent: 'center'
-    // backgroundColor: 'pink'
   },
   logoContainer: {
-    flex: 1,
-    height: '50%',
-    alignItems: 'center',
-    width: '100%'
-    // backgroundColor: 'blue'
-  },
-  form: {
-    flex: 1,
-    alignItems: 'center',
-    width: '100%'
-    // marginTop: 20
-    // backgroundColor: 'purple'
+    flex: 2,
+    // height: '50%',
+    width: '100%',
+    alignItems: 'center'
   },
   button: {
     width: '80%'
   },
   row: {
     flexDirection: 'row',
-    bottom: 10
+    marginVertical: 10
   },
   link: {
     color: theme.colors.accent,
