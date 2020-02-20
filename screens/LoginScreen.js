@@ -46,6 +46,8 @@ const LoginScreen = ({ navigation }) => {
       setError(response.error);
     } else {
       navigation.navigate('MapScreen');
+      setEmail({ value: '', error: '' });
+      setPassword({ value: '', error: '' });
     }
 
     setLoading(false);
@@ -77,6 +79,7 @@ const LoginScreen = ({ navigation }) => {
               autoCompleteType="email"
               textContentType="emailAddress"
               keyboardType="email-address"
+              blurOnSubmit={true}
             />
 
             <TextInput
