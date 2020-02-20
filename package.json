@@ -10,10 +10,15 @@
   },
   "dependencies": {
     "expo": "^35.0.0",
+    "expo-av": "~7.0.1",
     "expo-facebook": "~7.0.0",
+    "expo-intent-launcher": "~7.0.0",
     "expo-linear-gradient": "~7.0.0",
+    "expo-location": "~7.0.0",
+    "expo-task-manager": "~7.0.0",
     "firebase": "^7.7.0",
     "geodist": "^0.2.1",
+    "martinez-polygon-clipping": "^0.6.2",
     "polybooljs": "^1.2.0",
     "react": "16.8.3",
     "react-dom": "16.8.3",
@@ -30,10 +35,7 @@
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "robust-point-in-polygon": "^1.0.3",
-    "uuid": "^3.4.0",
-    "expo-location": "~7.0.0",
-    "expo-task-manager": "~7.0.0",
-    "expo-intent-launcher": "~7.0.0"
+    "uuid": "^3.4.0"
   },
   "devDependencies": {
     "babel-preset-expo": "^7.1.0",

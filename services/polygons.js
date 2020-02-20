@@ -1,6 +1,14 @@
-// import PolyBool from 'polybooljs';
+import * as martinez from 'martinez-polygon-clipping';
 const PolyBool = require('polybooljs');
 const classifyPoint = require('robust-point-in-polygon');
+
+// polys must start and end with the same point
+export const martinezUnion = (poly1, poly2) => {
+  const p1 = [...poly1];
+  const p2 = [...poly2];
+  // TODO check if first and last point the same
+  return martinez.union([poly1], [poly2]);
+};
 
 // [...{latitude: x, longitude:y}]  -->  [...[x,y]]
 export const coordsToPoints = coords => {
@@ -64,6 +72,17 @@ export const poly1FullyContainsPoly2 = (poly1, poly2) => {
 };
 
 export const difference = (poly1, poly2) => {
+  // make sure first and last points are the same
+  if (!pointsAreSame(poly1[0], poly1[poly1.length - 1])) {
+    poly1.push(poly1[0]);
+  }
+  if (!pointsAreSame(poly2[0], poly2[poly2.length - 1])) {
+    poly2.push(poly2[0]);
+  }
+  return martinez.diff([poly1], [poly2]).map(p => p[0]);
+};
+
+export const depricatedDifference = (poly1, poly2) => {
   const region1 = pointsToRegion(sanitizeInversion(poly1));
   const region2 = pointsToRegion(sanitizeInversion(poly2));
   const difRegion = PolyBool.difference(region1, region2);
@@ -197,6 +216,10 @@ export const flattenPolygon = p => {
   }
 
   return polygon;
+};
+
+export const pointsAreSame = (A, B) => {
+  return A[0] === B[0] && A[1] === B[1];
 };
 
 export const untwistPolygon = p => {
@@ -369,11 +392,223 @@ export const intersect = (poly1, poly2) => {
 };
 
 export const merge = (poly1, poly2) => {
+  // make sure first and last points are the same
+  if (!pointsAreSame(poly1[0], poly1[poly1.length - 1])) {
+    poly1.push(poly1[0]);
+  }
+  if (!pointsAreSame(poly2[0], poly2[poly2.length - 1])) {
+    poly2.push(poly2[0]);
+  }
+  return martinez.union([poly1], [poly2])[0][0];
+};
+
+export const depricatedMerge = (poly1, poly2) => {
   const region1 = pointsToRegion(sanitizeInversion(poly1));
   const region2 = pointsToRegion(sanitizeInversion(poly2));
   const mergedRegions = PolyBool.union(region1, region2);
   // only return last region, all other regions are holes
   return mergedRegions.regions.pop();
+};
+
+export const combine2Polygons = (poly1, poly2) => {
+  // make sure polygons are wound clockwise
+  // then add points to every intersection
+  let [P1, P2] = flatten2Polygons(
+    sanitizeInversion(poly1),
+    sanitizeInversion(poly2)
+  );
+  const newPoly = [];
+
+  // *-1-* find northern point
+  let northernLat = P1[0][0];
+  let northernIndex = 0;
+  let northernPoly = P1;
+  let nonNorthernPoly = P2;
+  for (let i = 1; i < P1.length; i++) {
+    const lat = P1[i][0];
+    if (lat > northernLat) {
+      northernLat = lat;
+      northernIndex = i;
+    }
+  }
+  for (let i = 0; i < P2.length; i++) {
+    const lat = P2[i][0];
+    if (lat > northernLat) {
+      northernLat = lat;
+      northernIndex = i;
+      northernPoly = P2;
+      nonNorthernPoly = P1;
+    }
+  }
+
+  // *-2-* make northern point the start of the polygon
+  northernPoly = [
+    ...northernPoly.slice(northernIndex, northernPoly.length),
+    ...northernPoly.slice(0, northernIndex)
+  ];
+
+  // *-2-* trace the outside points of both polys to make newPoly
+  let currentIndex = 1;
+  let currentPoly = [...northernPoly];
+  let currentPoint = northernPoly[0];
+  let otherPoly = [...nonNorthernPoly];
+  let nextPoint = northernPoly[1];
+  const _swapPolys = () => {
+    let temp = currentPoly;
+    currentPoly = otherPoly;
+    otherPoly = temp;
+  };
+
+  const log = [];
+
+  newPoly.push(currentPoint);
+
+  while (!pointsAreSame(nextPoint, northernPoly[0])) {
+    newPoly.push(nextPoint);
+    const prevPoint = currentPoint;
+    currentPoint = nextPoint;
+    // look for a matching point in the other poly
+
+    let pointFound = false;
+
+    for (let i = 0; i < otherPoly.length; i++) {
+      const point = otherPoly[i];
+      // if you find a matching point
+      if (pointsAreSame(currentPoint, point)) {
+        // find point to the left and set it to nextPoint
+        const pointX =
+          currentIndex === currentPoly.length - 1
+            ? currentPoly[0]
+            : currentPoly[currentIndex + 1];
+
+        const pointY =
+          i === 0 ? otherPoly[otherPoly.length - 1] : otherPoly[i - 1];
+        const pointZ =
+          i === otherPoly.length - 1 ? otherPoly[0] : otherPoly[i + 1];
+
+        const dirX = directionOfPoint(prevPoint, currentPoint, pointX);
+        const dirY = directionOfPoint(prevPoint, currentPoint, pointY);
+        const dirZ = directionOfPoint(prevPoint, currentPoint, pointZ);
+
+        const angleX = angle(prevPoint, currentPoint, pointX);
+        const angleY = angle(prevPoint, currentPoint, pointY);
+        const angleZ = angle(prevPoint, currentPoint, pointZ);
+        // set nextPoint to Y or Z
+
+        // find all points to the left and give me the one with the smallest angle
+        let points = [
+          { name: 'X', point: pointX, dir: dirX, angle: angleX },
+          { name: 'Y', point: pointY, dir: dirY, angle: angleY },
+          { name: 'Z', point: pointZ, dir: dirZ, angle: angleZ }
+        ];
+
+        const pointsToTheLeft = points.filter(p => p.dir);
+
+        if (pointsToTheLeft === 1) {
+          // 1 points to the left
+          if (pointsToTheLeft[0].name === 'X') {
+            break;
+          } else {
+            handleNewPoint(pointsToTheLeft[0]);
+          }
+        } else if (pointsToTheLeft) {
+          // multiple points to the left
+        } else {
+          // no points to the left
+        }
+
+        const smallestAngleOnLeft = points.reduce((acc, point) => {
+          if (point.dir) {
+            return acc.angle;
+          }
+          return acc;
+        }, []);
+        // else give me the points with the largest angle
+
+        // if more than one point (X and Y/Z are on the same line) check the next points along the path
+
+        // if all point
+        // if Y is positive and Z is 0/negative
+        // if Z is positive and Y is 0/negative
+        // if one is at 0 and other is negative
+        // if both are negative
+        // if both are positive
+
+        nextPoint = dirY > 0 ? pointY : dirZ > 0 ? pointZ : 0;
+        // swap polys
+        // set current index to i
+        log.push({ pointY, pointZ, dirY, dirZ });
+      }
+    }
+
+    if (!pointFound) {
+      currentIndex =
+        currentIndex === currentPoly.length - 1 ? 0 : currentIndex + 1;
+      nextPoint = currentPoly[currentIndex];
+    }
+  }
+
+  return [...log, newPoly];
+};
+
+const angle = (point1, anglePoint, point2) => {
+  const p1 = { x: point1[1], y: point1[0] };
+  const p2 = { x: anglePoint[1], y: anglePoint[0] };
+  const p3 = { x: point2[1], y: point2[0] };
+
+  const p12 = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+  const p13 = Math.sqrt(Math.pow(p1.x - p3.x, 2) + Math.pow(p1.y - p3.y, 2));
+  const p23 = Math.sqrt(Math.pow(p2.x - p3.x, 2) + Math.pow(p2.y - p3.y, 2));
+
+  //angle in degrees
+  return (resultDegree =
+    (Math.acos(
+      (Math.pow(p12, 2) + Math.pow(p23, 2) - Math.pow(p13, 2)) / (2 * p12 * p23)
+    ) *
+      180) /
+    Math.PI);
+};
+
+export const flatten2Polygons = (poly1, poly2) => {
+  let P1 = [...poly1];
+  let P2 = [...poly2];
+  let furthestClearIndex = 0;
+
+  // for every line in P1
+  for (let i = furthestClearIndex; i < P1.length; i++) {
+    const nextI = i === P1.length - 1 ? 0 : i + 1;
+    const A = P1[i];
+    let B = P1[nextI];
+
+    // check every line in P2
+    for (let j = 0; j < P2.length; j++) {
+      const nextJ = j === P2.length - 1 ? 0 : j + 1;
+      const C = P2[j];
+      const D = P2[nextJ];
+
+      // check for intersection
+      const intersectPoint = lineIntersectPoint(A, B, C, D);
+
+      // insert intersect point into both polys
+      if (intersectPoint) {
+        // check to see if the end of one line is along the path of the other
+        if (
+          !pointsAreSame(intersectPoint, A) &&
+          !pointsAreSame(intersectPoint, B)
+        ) {
+          P1.splice(nextI, 0, intersectPoint);
+          B = intersectPoint;
+        }
+        if (
+          !pointsAreSame(intersectPoint, C) &&
+          !pointsAreSame(intersectPoint, D)
+        ) {
+          P2.splice(nextJ, 0, intersectPoint);
+        }
+      }
+    }
+  }
+  return [P1, P2];
 };
 
 // invert polygon if wound counter-clockwise
@@ -411,6 +646,8 @@ export const getRandomColor = () => {
 // line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
 // Determine the intersection point of two line segments
 // Return FALSE if the lines don't intersect
+// Return FALSE if any points are the same
+// Return intersection point if end of one line lands on the path of the other
 export function lineIntersectPoint(pointA, pointB, pointF, pointG) {
   let [x1, y1] = pointA;
   let [x2, y2] = pointB;

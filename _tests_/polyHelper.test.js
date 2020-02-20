@@ -1,5 +1,84 @@
-import * as polyHelper from '../helpers/polyHelper';
+import * as polyHelper from '../services/polygons';
 import * as testData from '../fake-data/fake-data';
+
+describe('f() martinez-polygon-clipping', () => {
+  const sq1 = [
+    [0, 0],
+    [0, 4],
+    [4, 4],
+    [4, 0],
+    [0, 0]
+  ];
+  const sq2 = [
+    [0, 1],
+    [0, 2],
+    [10, 2],
+    [10, 1],
+    [0, 1]
+  ];
+  const sq3 = [
+    [1, 0],
+    [1, 4],
+    [2, 4],
+    [2, 0.1],
+    [3, 0.1],
+    [3, 4],
+    [4, 4],
+    [4, 0],
+    [1, 0]
+  ];
+  const sq4 = [
+    [1, 1],
+    [1, 2],
+    [2, 2],
+    [2, 1],
+    [1, 1]
+  ];
+
+  test.only('martinezUnion', () => {
+    expect(polyHelper.merge(sq2, sq3)).toEqual({});
+  });
+});
+
+describe('f() flatten 2 polygons', () => {
+  sq1 = [
+    [2, 0],
+    [2, 2],
+    [0, 2],
+    [0, 0]
+  ];
+  sq2 = [
+    [1, 1],
+    [1, 3],
+    [3, 3],
+    [3, 1]
+  ];
+
+  test('combine 2 polygons', () => {
+    expect(polyHelper.combine2Polygons(sq1, sq2)).toEqual({});
+  });
+
+  test('flatten 2 polygons', () => {
+    expect(polyHelper.flatten2Polygons(sq1, sq2)).toEqual({
+      P1: [
+        [0, 0],
+        [0, 2],
+        [1, 2],
+        [2, 2],
+        [2, 1],
+        [2, 0]
+      ],
+      P2: [
+        [2, 1],
+        [1, 1],
+        [1, 2],
+        [1, 3],
+        [3, 3],
+        [3, 1]
+      ]
+    });
+  });
+});
 
 describe('f() difference', () => {
   test('basic cross shape', () => {
@@ -230,7 +309,7 @@ describe('f() untwistPolygon', () => {
     ]);
   });
 
-  test.only('crown ', () => {
+  test('crown ', () => {
     expect(polyHelper.untwistPolygon(testData.crown_right)).toEqual();
   });
 });

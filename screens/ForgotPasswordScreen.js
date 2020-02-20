@@ -1,8 +1,15 @@
 import React, { memo, useState } from 'react';
-import { Text, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  KeyboardAvoidingView,
+  SafeAreaView
+} from 'react-native';
 import { Headline, FAB } from 'react-native-paper';
 
-import Background from '../components/Background';
+import BackgroundVideo from '../components/BackgroundVideo';
 import BackButton from '../components/BackButton';
 import Logo from '../components/Logo';
 import TextInput from '../components/TextInput';
@@ -43,44 +50,90 @@ const ForgotPasswordScreen = ({ navigation }) => {
   };
 
   return (
-    <Background>
+    <View style={styles.container}>
+      <BackgroundVideo />
+
+      <KeyboardAvoidingView
+        style={styles.avoidingView}
+        behavior="height"
+        // keyboardVerticalOffset={100}
+        enabled
+      >
+        <SafeAreaView style={styles.content}>
+          <View style={styles.logoContainer}>
+            <Logo /> 
+          </View>
+
+          <View style={styles.resetContainer}>
+            <Headline>Reset Password</Headline>
+
+            <TextInput
+              label="E-mail address"
+              returnKeyType="done"
+              value={email.value}
+              onChangeText={text => setEmail({ value: text, error: '' })}
+              error={!!email.error}
+              errorText={email.error}
+              autoCapitalize="none"
+              autoCompleteType="email"
+              textContentType="emailAddress"
+              keyboardType="email-address"
+            />
+
+            <FAB
+              label="Send Reset Instructions"
+              icon="email"
+              loading={loading}
+              onPress={_onSendPressed}
+              style={styles.button}
+            />
+          </View>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+
       <BackButton navigation={navigation} />
-
-      <Logo />
-
-      <Headline>Restore Password</Headline>
-
-      <TextInput
-        label="E-mail address"
-        returnKeyType="done"
-        value={email.value}
-        onChangeText={text => setEmail({ value: text, error: '' })}
-        error={!!email.error}
-        errorText={email.error}
-        autoCapitalize="none"
-        autoCompleteType="email"
-        textContentType="emailAddress"
-        keyboardType="email-address"
-      />
-
-      <FAB
-        label="Send Reset Instructions"
-        icon="plus"
-        loading={loading}
-        onPress={_onSendPressed}
-        style={styles.button}
-      />
 
       <NotificationPopup
         type={toast.type}
         message={toast.value}
         onDismiss={() => setToast({ value: '', type: '' })}
       />
-    </Background>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center'
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    width: '100%'
+  },
+
+  avoidingView: {
+    flex: 1,
+    alignItems: 'center',
+    width: '90%'
+    // justifyContent: 'center'
+    // backgroundColor: 'pink'
+  },
+  logoContainer: {
+    flex: 1,
+    height: '50%',
+    alignItems: 'center',
+    width: '100%'
+    // backgroundColor: 'blue'
+  },
+  resetContainer: {
+    flex: 1,
+    alignItems: 'center',
+    width: '100%'
+    // marginTop: 20
+    // backgroundColor: 'purple'
+  },
   button: {
     marginTop: 12
   },

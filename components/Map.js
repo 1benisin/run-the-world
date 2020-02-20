@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Dimensions,
   StyleSheet,
@@ -21,13 +21,14 @@ import * as runActions from '../store/run/actions';
 import * as userActions from '../store/user/actions';
 import * as territoryActions from '../store/territory/actions';
 import store from '../store/store';
+import { debugState } from '../constants/debugMode';
 
-const GET_LOCATION_IN_BACKGROUND = 'GET_LOCATION_IN_BACKGROUND';
+const USER_LOCATION_IN_BACKGROUND = 'USER_LOCATION_IN_BACKGROUND';
+const RUN_LOCATION_IN_BACKGROUND = 'RUN_LOCATION_IN_BACKGROUND';
 
 const Map = props => {
   const [locationDialogVisible, setLocationDialogVisible] = useState(false);
   const [followingLocation, setFollowingLocation] = useState(true);
-  const location = useSelector(state => state.user.location);
   const [mapRegion, setMapRegion] = useState({
     latitude: 47.618554776633864,
     longitude: -122.35166501227786,
@@ -36,6 +37,7 @@ const Map = props => {
   });
   const map = useRef(null);
   const dispatch = useDispatch();
+  const location = useSelector(state => state.user.location);
   const isRunning = useSelector(state => state.runs.isRunning);
 
   useEffect(() => {
@@ -51,30 +53,79 @@ const Map = props => {
         'Oops, this will not work on Sketch in an Android emulator. Try it on your device!'
       );
     } else {
-      _getLocationAsync();
+      // _getLocationAsync();
+      // _startFetchingLocationAsync();
     }
 
     return () => {
-      Location.stopLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND);
+      console.log('map component unmounted');
+      // Location.stopLocationUpdatesAsync(USER_LOCATION_IN_BACKGROUND);
       AppState.removeEventListener('change', _handleAppStateChange);
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (followingLocation) {
-  //     _animateToCurrentLocation();
-  //   }
+  useEffect(() => {
+    if (debugState()) return;
+    console.log('Running?', isRunning);
+    if (isRunning) {
+      Location.startLocationUpdatesAsync(RUN_LOCATION_IN_BACKGROUND, {
+        accuracy: Location.Accuracy.High,
+        showsBackgroundLocationIndicator: true
+      });
+    } else {
+      Location.stopLocationUpdatesAsync(RUN_LOCATION_IN_BACKGROUND);
+    }
+  }, [isRunning]);
 
-  //   return () => {};
-  // }, [location]);
+  _getLocationAsync = async () => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      console.warn('Permission to access location was denied');
+      setLocationDialogVisible(true);
+      return;
+    }
+
+    const loc = await Location.getCurrentPositionAsync({});
+    console.log('getlocation', loc);
+    dispatch(userActions.setUsersLocation(loc.coords));
+    return loc.coords;
+  };
+
+  let _stopFetchingLocationAsync = async () => {
+    // make sure task is registered before trying to stop it
+    const taskRegistered = await TaskManager.isTaskRegisteredAsync(
+      USER_LOCATION_IN_BACKGROUND
+    );
+
+    if (taskRegistered) {
+      Location.stopLocationUpdatesAsync(USER_LOCATION_IN_BACKGROUND);
+    }
+  };
+
+  const _startFetchingLocationAsync = async () => {
+    // check for location permissions before starting location updates
+    const { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status === 'granted') {
+      await Location.startLocationUpdatesAsync(USER_LOCATION_IN_BACKGROUND, {
+        accuracy: Location.Accuracy.Balanced
+      });
+      return status;
+    } else {
+      console.warn('Permission to access location was denied');
+      setLocationDialogVisible(true);
+      return;
+    }
+  };
 
   const _handleAppStateChange = async appState => {
+    console.log('App State: ', appState);
     if (appState === 'active') {
-      console.log('App has come to the foreground!');
+      // _startFetchingLocationAsync();
 
+      // hide or show prompt for user to grant location permissions
       const { status } = await Permissions.askAsync(Permissions.LOCATION);
       if (status === 'granted') {
-        _getLocationAsync();
+        setLocationDialogVisible(false);
         return;
       } else {
         console.warn('Permission to access location was denied');
@@ -82,20 +133,8 @@ const Map = props => {
         return;
       }
     }
-  };
-
-  const _getLocationAsync = async () => {
-    const { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if (status === 'granted') {
-      await Location.startLocationUpdatesAsync(GET_LOCATION_IN_BACKGROUND, {
-        accuracy: Location.Accuracy.High,
-        showsBackgroundLocationIndicator: true
-      });
-      return;
-    } else {
-      console.warn('Permission to access location was denied');
-      setLocationDialogVisible(true);
-      return;
+    if (appState === 'background') {
+      // _stopFetchingLocationAsync();
     }
   };
 
@@ -110,20 +149,33 @@ const Map = props => {
   };
 
   const _simulateNewRunCoordinate = e => {
-    if (isRunning) dispatch(runActions.addCoord(e.nativeEvent.coordinate));
+    if (isRunning)
+      dispatch(
+        runActions.addCoord({
+          ...e.nativeEvent.coordinate,
+          timestamp: Date.now(),
+          accuracy: 5
+        })
+      );
   };
 
   const _animateToCurrentLocation = () => {
-    if (map && map.current)
+    // setFollowingLocation(true);
+    if (map && map.current) {
       map.current.animateToRegion(
         {
           latitude: location.latitude,
           longitude: location.longitude,
-          latitudeDelta: 0.03,
-          longitudeDelta: 0.03
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02
         },
         1000
       );
+    }
+  };
+
+  const _updateUserLocation = c => {
+    console.log('map location', c);
   };
 
   return (
@@ -134,13 +186,14 @@ const Map = props => {
         showsUserLocation={true}
         style={styles.map}
         initialRegion={mapRegion}
-        // onPress={_simulateNewRunCoordinate}
         showsPointsOfInterest={false}
         // followsUserLocation={followingLocation}
         // showsMyLocationButton={true}
         zoomTapEnabled={false}
         loadingEnabled={true}
         // onRegionChange={() => setFollowingLocation(false)}
+        onPress={e => debugState() && _simulateNewRunCoordinate(e)}
+        // onPanDrag={() => setFollowingLocation(false)}
       >
         {props.children}
       </MapView>
@@ -192,16 +245,37 @@ const styles = StyleSheet.create({
 
 export default Map;
 
-TaskManager.defineTask(GET_LOCATION_IN_BACKGROUND, ({ data, error }) => {
+// TaskManager.defineTask(USER_LOCATION_IN_BACKGROUND, ({ data, error }) => {
+//   if (error) {
+//     // Error occurred - check `error.message` for more details.
+//     console.warn(error);
+//     return;
+//   }
+//   if (data) {
+//     console.log(USER_LOCATION_IN_BACKGROUND, Date.now());
+
+//     let currentLocation = {
+//       latitude: data.locations[0].coords.latitude,
+//       longitude: data.locations[0].coords.longitude
+//     };
+//     store.dispatch(userActions.setUsersLocation(currentLocation));
+//   }
+// });
+
+TaskManager.defineTask(RUN_LOCATION_IN_BACKGROUND, ({ data, error }) => {
   if (error) {
     // Error occurred - check `error.message` for more details.
     console.warn(error);
     return;
   }
   if (data) {
-    data.locations.forEach(loc => {
-      const coords = { ...loc.coords, timestamp: loc.timestamp };
-      store.dispatch(userActions.setUsersLocation(coords));
-    });
+    const location = {
+      ...data.locations[0].coords,
+      timestamp: data.locations[0].timestamp
+    };
+
+    console.log(RUN_LOCATION_IN_BACKGROUND, location);
+
+    store.dispatch(runActions.addCoord(location));
   }
 });

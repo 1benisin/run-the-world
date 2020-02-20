@@ -53,6 +53,15 @@ const kalman = (location, lastLocation, constant) => {
 };
 
 let lastLocation;
+// rawData must look like: [
+// {
+//   "accuracy": 5,
+//   "latitude": 47.61796256938197,
+//   "longitude": -122.35288832144924,
+//   "timestamp": 1582229241296,
+// },
+// ...
+// ]
 const runKalmanOnLocations = (rawData, kalmanConstant) =>
   rawData
     .map(location => ({

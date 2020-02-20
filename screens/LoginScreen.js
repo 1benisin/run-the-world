@@ -4,23 +4,18 @@ import {
   View,
   KeyboardAvoidingView,
   TouchableOpacity,
-  Dimensions
+  SafeAreaView
 } from 'react-native';
-import {
-  Headline,
-  Title,
-  Button,
-  Divider,
-  Text,
-  Subheading
-} from 'react-native-paper';
+import { Headline, Text } from 'react-native-paper';
 
 import TextInput from '../components/TextInput';
-import Background from '../components/Background';
+import BackgroundVideo from '../components/BackgroundVideo';
 import Logo from '../components/Logo';
 import NotificationPopup from '../components/NotificationPopup';
+import ButtonRounded from '../components/ButtonRounded';
 import { emailValidator, passwordValidator } from '../services/utils';
 import { loginWithEmail, loginWithFacebook } from '../services/auth';
+import theme from '../constants/theme';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState({ value: '', error: '' });
@@ -51,89 +46,133 @@ const LoginScreen = ({ navigation }) => {
       setError(response.error);
     } else {
       navigation.navigate('MapScreen');
+      setEmail({ value: '', error: '' });
+      setPassword({ value: '', error: '' });
     }
 
     setLoading(false);
   };
 
   return (
-    <Background>
-      <View style={styles.viewContainer}>
-        <Headline>Are You Ready To</Headline>
-        <Headline>Run The World?</Headline>
-        <Logo style={styles.logo} />
-        <TextInput
-          label="Email"
-          returnKeyType="next"
-          value={email.value}
-          onChangeText={text => setEmail({ value: text, error: '' })}
-          error={!!email.error}
-          errorText={email.error}
-          autoCapitalize="none"
-          autoCompleteType="email"
-          textContentType="emailAddress"
-          keyboardType="email-address"
-        />
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+      <BackgroundVideo />
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.inner}>
+          <View style={styles.header}>
+            <Headline>Ready To</Headline>
+            <Headline>Run The World?</Headline>
 
-        <TextInput
-          label="Password"
-          returnKeyType="done"
-          value={password.value}
-          onChangeText={text => setPassword({ value: text, error: '' })}
-          error={!!password.error}
-          errorText={password.error}
-          secureTextEntry
-          autoCapitalize="none"
-        />
+            <View style={styles.logoContainer}>
+              <Logo />
+            </View>
+          </View>
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate('ForgotPasswordScreen')}
-        >
-          <Text>Forgot Password?</Text>
-        </TouchableOpacity>
+          <View style={styles.content}>
+            <TextInput
+              label="Email"
+              returnKeyType="done"
+              value={email.value}
+              onChangeText={text => setEmail({ value: text, error: '' })}
+              error={!!email.error}
+              errorText={email.error}
+              autoCapitalize="none"
+              autoCompleteType="email"
+              textContentType="emailAddress"
+              keyboardType="email-address"
+              blurOnSubmit={true}
+            />
 
-        <Button
-          loading={loading}
-          mode="contained"
-          onPress={_onLoginPressed}
-          style={styles.signInButton}
-        >
-          Sign in
-        </Button>
+            <TextInput
+              label="Password"
+              returnKeyType="done"
+              value={password.value}
+              onChangeText={text => setPassword({ value: text, error: '' })}
+              error={!!password.error}
+              errorText={password.error}
+              secureTextEntry
+              autoCapitalize="none"
+            />
 
-        <Text>Or With</Text>
+            <TouchableOpacity
+              style={styles.forgotPassword}
+              onPress={() => navigation.navigate('ForgotPasswordScreen')}
+            >
+              <Text style={styles.link}>Forgot Password?</Text>
+            </TouchableOpacity>
 
-        <Button mode="outlined" onPress={loginWithFacebook}>
-          Facebook
-        </Button>
+            <ButtonRounded
+              style={styles.loginButton}
+              loading={loading}
+              onPress={_onLoginPressed}
+            >
+              Sign in
+            </ButtonRounded>
 
-        <View style={styles.row}>
-          <Text>Don't have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('SignUpScreen')}>
-            <Text>Sign Up</Text>
-          </TouchableOpacity>
+            <Text>Or With</Text>
+
+            <ButtonRounded
+              onPress={loginWithFacebook}
+              style={styles.facebookButton}
+            >
+              Facebook
+            </ButtonRounded>
+          </View>
+
+          <View style={{ flex: 1 }} />
+
+          <View style={styles.row}>
+            <Text>Don't have an account? </Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('SignUpScreen')}
+            >
+              <Text style={styles.link}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        <NotificationPopup message={error} onDismiss={() => setError('')} />
-      </View>
-    </Background>
+      </SafeAreaView>
+      <NotificationPopup message={error} onDismiss={() => setError('')} />
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  viewContainer: {
+  inner: {
     flex: 1,
-    justifyContent: 'space-around',
+    alignSelf: 'center',
     alignItems: 'center',
+    justifyContent: 'flex-end',
     width: '90%'
   },
-  logo: {
-    height: Dimensions.get('window').height / 5,
-    resizeMode: 'contain'
+  header: {
+    height: '40%',
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'flex-end'
   },
-  signInButton: {
-    borderRadius: 30,
+  content: {
+    width: '100%',
+    alignItems: 'center'
+  },
+  logoContainer: {
+    height: '70%',
+    alignItems: 'center',
     width: '100%'
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    padding: 5
+  },
+  link: {
+    color: theme.colors.accent,
+    fontWeight: 'bold'
+  },
+  loginButton: {
+    width: '80%'
+  },
+  facebookButton: {
+    width: '80%',
+    backgroundColor: theme.colors.primary,
+    marginVertical: 10
   },
   screen: {
     flex: 1,
@@ -143,7 +182,11 @@ const styles = StyleSheet.create({
     width: '80%'
   },
   row: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    marginVertical: 10
+  },
+  whiteText: {
+    color: 'white'
   }
 });
 

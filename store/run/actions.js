@@ -19,6 +19,8 @@ import * as RunEffects from './effects';
 import { database } from '../../services/firebase';
 import Run from './model';
 import AppError from '../appError/model';
+import runKalmanOnLocations from '../../services/kalman';
+import noiseyRun from '../../fake-data/noiseyRun';
 
 export const fetchUserRuns = () => {
   return async (dispatch, getState) => {
@@ -44,6 +46,7 @@ export const addCoord = coord => {
     const isRunning = getState().runs.isRunning;
 
     if (isRunning) {
+      console.log('added coord');
       dispatch({ type: RUN_ADD_COORD_SUCCESS, coord });
     } else {
       dispatch({ type: RUN_ADD_COORD_FAILURE });
@@ -71,24 +74,32 @@ export const saveRun = (ignoreError = false) => {
     dispatch({ type: RUN_SAVE_REQUEST });
 
     const endTime = Date.now();
+    const userId = getState().user.id;
     let { coordinates, startTime } = getState().runs;
 
     // TODO delete
-    await database.ref('debug/' + Date.now()).set(coordinates);
-    console.log('coordinates', coordinates);
+    // console.log('run length', coordinates.length);
+    // coordinates = noiseyRun;
+    // console.log('run length', coordinates.length);
+    // await database.ref('debug/' + Date.now()).set(coordinates);
+    // console.log('coordinates', coordinates);
+    // coordinates = coordinates.map(coord => {
+    //   return { latitude: coord.latitude, longitude: coord.longitude };
+    // });
+    // delete
+
+    // denoise run using Kalman's algorithm
+    coordinates = runKalmanOnLocations(coordinates, 1000);
+
     coordinates = coordinates.map(coord => {
       return { latitude: coord.latitude, longitude: coord.longitude };
     });
-    // delete
-
-    const userId = getState().user.id;
 
     // Effect - convert coords to points
     let runPoints = RunEffects.convertCoordsToPoints(coordinates);
 
     // EFFECT - calculate run distance
     const runDistance = RunEffects.calculateRunLength(runPoints);
-    console.log(runDistance);
 
     // Effect - check if run is too short
     runPoints = RunEffects.checkTooShort(runPoints);
