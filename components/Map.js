@@ -21,6 +21,7 @@ import * as runActions from '../store/run/actions';
 import * as userActions from '../store/user/actions';
 import * as territoryActions from '../store/territory/actions';
 import store from '../store/store';
+import { debugState } from '../constants/debugMode';
 
 const USER_LOCATION_IN_BACKGROUND = 'USER_LOCATION_IN_BACKGROUND';
 const RUN_LOCATION_IN_BACKGROUND = 'RUN_LOCATION_IN_BACKGROUND';
@@ -53,7 +54,7 @@ const Map = props => {
       );
     } else {
       // _getLocationAsync();
-      _startFetchingLocationAsync();
+      // _startFetchingLocationAsync();
     }
 
     return () => {
@@ -64,6 +65,7 @@ const Map = props => {
   }, []);
 
   useEffect(() => {
+    if (debugState()) return;
     console.log('Running?', isRunning);
     if (isRunning) {
       Location.startLocationUpdatesAsync(RUN_LOCATION_IN_BACKGROUND, {
@@ -118,7 +120,7 @@ const Map = props => {
   const _handleAppStateChange = async appState => {
     console.log('App State: ', appState);
     if (appState === 'active') {
-      _startFetchingLocationAsync();
+      // _startFetchingLocationAsync();
 
       // hide or show prompt for user to grant location permissions
       const { status } = await Permissions.askAsync(Permissions.LOCATION);
@@ -132,7 +134,7 @@ const Map = props => {
       }
     }
     if (appState === 'background') {
-      _stopFetchingLocationAsync();
+      // _stopFetchingLocationAsync();
     }
   };
 
@@ -147,7 +149,14 @@ const Map = props => {
   };
 
   const _simulateNewRunCoordinate = e => {
-    if (isRunning) dispatch(runActions.addCoord(e.nativeEvent.coordinate));
+    if (isRunning)
+      dispatch(
+        runActions.addCoord({
+          ...e.nativeEvent.coordinate,
+          timestamp: Date.now(),
+          accuracy: 5
+        })
+      );
   };
 
   const _animateToCurrentLocation = () => {
@@ -183,7 +192,7 @@ const Map = props => {
         zoomTapEnabled={false}
         loadingEnabled={true}
         // onRegionChange={() => setFollowingLocation(false)}
-        // onPress={() => setFollowingLocation(false)}
+        onPress={e => debugState() && _simulateNewRunCoordinate(e)}
         // onPanDrag={() => setFollowingLocation(false)}
       >
         {props.children}
@@ -236,22 +245,22 @@ const styles = StyleSheet.create({
 
 export default Map;
 
-TaskManager.defineTask(USER_LOCATION_IN_BACKGROUND, ({ data, error }) => {
-  if (error) {
-    // Error occurred - check `error.message` for more details.
-    console.warn(error);
-    return;
-  }
-  if (data) {
-    console.log(USER_LOCATION_IN_BACKGROUND, Date.now());
+// TaskManager.defineTask(USER_LOCATION_IN_BACKGROUND, ({ data, error }) => {
+//   if (error) {
+//     // Error occurred - check `error.message` for more details.
+//     console.warn(error);
+//     return;
+//   }
+//   if (data) {
+//     console.log(USER_LOCATION_IN_BACKGROUND, Date.now());
 
-    let currentLocation = {
-      latitude: data.locations[0].coords.latitude,
-      longitude: data.locations[0].coords.longitude
-    };
-    store.dispatch(userActions.setUsersLocation(currentLocation));
-  }
-});
+//     let currentLocation = {
+//       latitude: data.locations[0].coords.latitude,
+//       longitude: data.locations[0].coords.longitude
+//     };
+//     store.dispatch(userActions.setUsersLocation(currentLocation));
+//   }
+// });
 
 TaskManager.defineTask(RUN_LOCATION_IN_BACKGROUND, ({ data, error }) => {
   if (error) {
@@ -260,12 +269,12 @@ TaskManager.defineTask(RUN_LOCATION_IN_BACKGROUND, ({ data, error }) => {
     return;
   }
   if (data) {
-    console.log(RUN_LOCATION_IN_BACKGROUND, Date.now());
-
     const location = {
       ...data.locations[0].coords,
       timestamp: data.locations[0].timestamp
     };
+
+    console.log(RUN_LOCATION_IN_BACKGROUND, location);
 
     store.dispatch(runActions.addCoord(location));
   }

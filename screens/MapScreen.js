@@ -45,13 +45,17 @@ const MapScreen = ({ navigation }) => {
   return (
     <View style={styles.screen}>
       <Map>
-        {/* <Polygon
-          coordinates={runKalmanOnLocations(noiseyRun.slice(), 1000)}
+        <Polygon
+          coordinates={polygonService.pointsToCoords([
+            [47.79554551320853, -122.33573728858224],
+            [47.79554832824738, -122.33576642551813],
+            [47.79555134458204, -122.33579995413525]
+          ])}
           // coordinates={noiseyRun}
           strokeWidth={4}
           // strokeColor="#000"
-          // fillColor={'rgba(255, 20, 0, 0.2)'}
-        /> */}
+          fillColor={'rgba(255, 255, 0, 0.2)'}
+        />
 
         {territories.map(ter => (
           <Polygon

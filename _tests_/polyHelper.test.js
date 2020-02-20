@@ -4,28 +4,39 @@ import * as testData from '../fake-data/fake-data';
 describe('f() martinez-polygon-clipping', () => {
   const sq1 = [
     [0, 0],
-    [0, 2],
-    [2, 2],
-    [2, 0],
+    [0, 4],
+    [4, 4],
+    [4, 0],
     [0, 0]
   ];
   const sq2 = [
-    [1, 1],
-    [1, 3],
-    [3, 3],
-    [3, 1],
-    [1, 1]
+    [0, 1],
+    [0, 2],
+    [10, 2],
+    [10, 1],
+    [0, 1]
   ];
   const sq3 = [
-    [2, 0],
-    [2, 2],
-    [4, 2],
+    [1, 0],
+    [1, 4],
+    [2, 4],
+    [2, 0.1],
+    [3, 0.1],
+    [3, 4],
+    [4, 4],
     [4, 0],
-    [2, 0]
+    [1, 0]
+  ];
+  const sq4 = [
+    [1, 1],
+    [1, 2],
+    [2, 2],
+    [2, 1],
+    [1, 1]
   ];
 
   test.only('martinezUnion', () => {
-    expect(polyHelper.martinezUnion(sq3, sq2)).toEqual({});
+    expect(polyHelper.merge(sq2, sq3)).toEqual({});
   });
 });
 

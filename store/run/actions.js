@@ -90,18 +90,16 @@ export const saveRun = (ignoreError = false) => {
 
     // denoise run using Kalman's algorithm
     coordinates = runKalmanOnLocations(coordinates, 1000);
+
     coordinates = coordinates.map(coord => {
       return { latitude: coord.latitude, longitude: coord.longitude };
     });
-
-    console.log('kalmans result', coordinates);
 
     // Effect - convert coords to points
     let runPoints = RunEffects.convertCoordsToPoints(coordinates);
 
     // EFFECT - calculate run distance
     const runDistance = RunEffects.calculateRunLength(runPoints);
-    console.log('runDistance', runDistance);
 
     // Effect - check if run is too short
     runPoints = RunEffects.checkTooShort(runPoints);

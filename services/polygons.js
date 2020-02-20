@@ -72,6 +72,17 @@ export const poly1FullyContainsPoly2 = (poly1, poly2) => {
 };
 
 export const difference = (poly1, poly2) => {
+  // make sure first and last points are the same
+  if (!pointsAreSame(poly1[0], poly1[poly1.length - 1])) {
+    poly1.push(poly1[0]);
+  }
+  if (!pointsAreSame(poly2[0], poly2[poly2.length - 1])) {
+    poly2.push(poly2[0]);
+  }
+  return martinez.diff([poly1], [poly2]).map(p => p[0]);
+};
+
+export const depricatedDifference = (poly1, poly2) => {
   const region1 = pointsToRegion(sanitizeInversion(poly1));
   const region2 = pointsToRegion(sanitizeInversion(poly2));
   const difRegion = PolyBool.difference(region1, region2);
@@ -381,6 +392,17 @@ export const intersect = (poly1, poly2) => {
 };
 
 export const merge = (poly1, poly2) => {
+  // make sure first and last points are the same
+  if (!pointsAreSame(poly1[0], poly1[poly1.length - 1])) {
+    poly1.push(poly1[0]);
+  }
+  if (!pointsAreSame(poly2[0], poly2[poly2.length - 1])) {
+    poly2.push(poly2[0]);
+  }
+  return martinez.union([poly1], [poly2])[0][0];
+};
+
+export const depricatedMerge = (poly1, poly2) => {
   const region1 = pointsToRegion(sanitizeInversion(poly1));
   const region2 = pointsToRegion(sanitizeInversion(poly2));
   const mergedRegions = PolyBool.union(region1, region2);
