@@ -94,7 +94,7 @@ export const createTerritory = () => {
       await TerritoryEffects.updateDBTerritories(updatedTerritories);
 
       dispatch({ type: TERRITORY_CREATE_SUCCESS });
-      dispatch(fetchTerritories([completedRun.coords[0]]));
+      dispatch(fetchTerritories(completedRun.coords[0]));
 
       return;
     } catch (error) {
