@@ -1,28 +1,43 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { withTheme, Checkbox } from 'react-native-paper';
+import { withTheme, Checkbox, Switch } from 'react-native-paper';
+import { useSelector } from 'react-redux';
 
 import BackButton from '../components/BackButton';
 import { toggleDebugState, debugState } from '../constants/debugMode';
+import theme from '../constants/theme';
 
 const SettingsScreen = ({ navigation, theme }) => {
   const [checked, setChecked] = useState(debugState());
+  const userEmail = useSelector(state => state.user.email);
+
+  // if user is a Dev display debugToggle
+  let showDebugToggle = false;
+  if (
+    userEmail === 'user1@test.com' ||
+    userEmail === 'user2@test.com' ||
+    userEmail === 'user3@test.com' ||
+    userEmail === 'benisin@gmail.com'
+  )
+    showDebugToggle = true;
 
   return (
     <View style={styles.screen}>
       <BackButton navigation={navigation} />
       <Text>SettingsScreen</Text>
-      <Checkbox
-        status={checked ? 'checked' : 'unchecked'}
-        onPress={() => {
-          setChecked(!checked);
-          toggleDebugState(!checked);
-        }}
-        uncheckedColor={theme.colors.accent}
-        color={theme.colors.accent}
-        style={{ backgroundColor: 'white' }}
-      />
-      <Text>Debug Mode</Text>
+      {showDebugToggle && (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Switch
+            value={checked}
+            onValueChange={() => {
+              setChecked(!checked);
+              toggleDebugState(!checked);
+            }}
+            color={'green'}
+          />
+          <Text> Debug Mode</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -33,7 +48,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'green'
+    backgroundColor: theme.colors.surface
   }
 });
 

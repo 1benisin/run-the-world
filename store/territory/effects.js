@@ -5,9 +5,8 @@ import Territory from './model';
 import * as polygonService from '../../services/polygons';
 import * as utils from '../../services/utils';
 
-export const fetchTerritoriesByRegion = async (
-  regionId = 'lat47a75lng-122a00'
-) => {
+export const fetchTerritoriesByCoords = async (coords = [47.75, -122.0]) => {
+  regionId = utils.coordinateToRegionId(coords);
   try {
     const response = await (
       await database.ref('territories/' + regionId).once('value')

@@ -57,16 +57,19 @@ const ProfileScreen = ({ navigation }) => {
       <BackButton navigation={navigation} />
       <Divider />
 
-      <ScrollView contentContainerStyle={styles.runsContainer}>
-        <Subheading>Your Runs</Subheading>
-        {userRuns.map(run => (
-          <View style={styles.runCard} key={run.id}>
-            <Text>{run.id}</Text>
-            <Text>{utils.formatDate(run.startTime)}</Text>
-            <Text>{utils.feetToMiles(run.distance)} mi</Text>
-          </View>
-        ))}
-      </ScrollView>
+      <Subheading>Your Runs</Subheading>
+
+      <View style={styles.runsContainer}>
+        <ScrollView style={{ width: '100%' }}>
+          {userRuns.map(run => (
+            <View style={styles.runCard} key={run.id}>
+              <Text>{utils.formatDate(run.startTime)}</Text>
+              <Text>{utils.feetToMiles(run.distance)} mi</Text>
+              <Text>{run.id.substr(run.id.length - 5)}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
 };
@@ -79,7 +82,7 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    height: '30%'
+    height: '25%'
   },
   headerContent: {
     height: '100%',
@@ -88,16 +91,17 @@ const styles = StyleSheet.create({
   },
   runsContainer: {
     flex: 1,
-    alignItems: 'center'
+    alignItems: 'center',
+    width: '90%'
   },
   runCard: {
     // backgroundColor: 'blue',
-    margin: 5,
+    marginBottom: 6,
     borderBottomColor: 'grey',
     borderBottomWidth: 1,
-    width: '80%',
+    width: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-around'
+    justifyContent: 'space-between'
   }
 });
 

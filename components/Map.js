@@ -22,6 +22,7 @@ import * as userActions from '../store/user/actions';
 import * as territoryActions from '../store/territory/actions';
 import store from '../store/store';
 import { debugState } from '../constants/debugMode';
+import { coordinateToRegionId } from '../services/utils';
 
 const USER_LOCATION_IN_BACKGROUND = 'USER_LOCATION_IN_BACKGROUND';
 const RUN_LOCATION_IN_BACKGROUND = 'RUN_LOCATION_IN_BACKGROUND';
@@ -41,25 +42,16 @@ const Map = props => {
   const isRunning = useSelector(state => state.runs.isRunning);
 
   useEffect(() => {
+    // gets currnet location
+    // then gets territores around that location
+    // then moves map to current location
+    _getTerritoriesAroundLocation();
+
     // registers event to handle app closed and reopened
     AppState.addEventListener('change', _handleAppStateChange);
 
-    // get territories from DB
-    dispatch(territoryActions.fetchTerritories());
-
-    // get location
-    if (Platform.OS === 'android' && !Constants.isDevice) {
-      console.warn(
-        'Oops, this will not work on Sketch in an Android emulator. Try it on your device!'
-      );
-    } else {
-      // _getLocationAsync();
-      // _startFetchingLocationAsync();
-    }
-
     return () => {
       console.log('map component unmounted');
-      // Location.stopLocationUpdatesAsync(USER_LOCATION_IN_BACKGROUND);
       AppState.removeEventListener('change', _handleAppStateChange);
     };
   }, []);
@@ -76,6 +68,24 @@ const Map = props => {
       Location.stopLocationUpdatesAsync(RUN_LOCATION_IN_BACKGROUND);
     }
   }, [isRunning]);
+
+  _getTerritoriesAroundLocation = async () => {
+    let loc;
+    // get location
+    if (Platform.OS === 'android' && !Constants.isDevice) {
+      console.warn(
+        'Oops, this will not work on Sketch in an Android emulator. Try it on your device!'
+      );
+    } else {
+      loc = await _getLocationAsync();
+    }
+
+    // get territories from DB
+    dispatch(territoryActions.fetchTerritories([loc.latitude, loc.longitude]));
+
+    // go to current location
+    _animateToCurrentLocation();
+  };
 
   _getLocationAsync = async () => {
     let { status } = await Permissions.askAsync(Permissions.LOCATION);
@@ -159,13 +169,13 @@ const Map = props => {
       );
   };
 
-  const _animateToCurrentLocation = () => {
-    // setFollowingLocation(true);
+  const _animateToCurrentLocation = async () => {
+    const loc = await _getLocationAsync();
     if (map && map.current) {
       map.current.animateToRegion(
         {
-          latitude: location.latitude,
-          longitude: location.longitude,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
           latitudeDelta: 0.02,
           longitudeDelta: 0.02
         },
@@ -176,6 +186,19 @@ const Map = props => {
 
   const _updateUserLocation = c => {
     console.log('map location', c);
+  };
+
+  const _onRegionChangeComplete = r => {
+    // if map has been moved to a new region fetch new territories
+    const oldRegionId = coordinateToRegionId([
+      mapRegion.latitude,
+      mapRegion.longitude
+    ]);
+    const newRegionId = coordinateToRegionId([r.latitude, r.longitude]);
+    if (oldRegionId !== newRegionId) {
+      dispatch(territoryActions.fetchTerritories([r.latitude, r.longitude]));
+      setMapRegion(r);
+    }
   };
 
   return (
@@ -192,6 +215,7 @@ const Map = props => {
         zoomTapEnabled={false}
         loadingEnabled={true}
         // onRegionChange={() => setFollowingLocation(false)}
+        onRegionChangeComplete={_onRegionChangeComplete}
         onPress={e => debugState() && _simulateNewRunCoordinate(e)}
         // onPanDrag={() => setFollowingLocation(false)}
       >
@@ -273,8 +297,6 @@ TaskManager.defineTask(RUN_LOCATION_IN_BACKGROUND, ({ data, error }) => {
       ...data.locations[0].coords,
       timestamp: data.locations[0].timestamp
     };
-
-    console.log(RUN_LOCATION_IN_BACKGROUND, location);
 
     store.dispatch(runActions.addCoord(location));
   }

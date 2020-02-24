@@ -94,7 +94,7 @@ export const createTerritory = () => {
       await TerritoryEffects.updateDBTerritories(updatedTerritories);
 
       dispatch({ type: TERRITORY_CREATE_SUCCESS });
-      dispatch(fetchTerritories());
+      dispatch(fetchTerritories(completedRun.coords[0]));
 
       return;
     } catch (error) {
@@ -105,11 +105,11 @@ export const createTerritory = () => {
   };
 };
 
-export const fetchTerritories = () => {
+export const fetchTerritories = coords => {
   return async dispatch => {
     dispatch({ type: TERRITORIES_FETCH_REQUEST });
 
-    const territories = await TerritoryEffects.fetchTerritoriesByRegion();
+    const territories = await TerritoryEffects.fetchTerritoriesByCoords(coords);
     const isError = territories instanceof AppError;
     if (isError) {
       dispatch(appErrorActions.createError(territories));
