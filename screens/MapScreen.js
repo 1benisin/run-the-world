@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { FAB, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
-import MapView, { Polygon, Marker } from 'react-native-maps';
+import MapView, { Polygon, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 

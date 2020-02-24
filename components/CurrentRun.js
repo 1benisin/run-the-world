@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
-import { Polygon } from 'react-native-maps';
+import { Polygon, Polyline } from 'react-native-maps';
 import { useSelector, useDispatch } from 'react-redux';
 
 import store from '../store/store';
@@ -17,18 +17,18 @@ const CurrentRun = () => {
   useEffect(() => {
     if (completedRun) {
       console.log('completedRun');
-      dispatch(territoryActions.fetchTerritories()).then(_ =>
-        dispatch(territoryActions.createTerritory())
-      );
+      dispatch(
+        territoryActions.fetchTerritories(completedRun.coords[0])
+      ).then(_ => dispatch(territoryActions.createTerritory()));
     }
   }, [completedRun]);
 
   return isRunning && coordinates.length > 2 ? (
-    <Polygon
+    <Polyline
       key={'Current Run'}
       coordinates={coordinates}
-      strokeColor="#ccc"
-      fillColor="rgb(200, 255, 255)"
+      strokeColor="red"
+      strokeWidth={3}
     />
   ) : null;
 };
