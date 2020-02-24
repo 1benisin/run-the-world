@@ -49,7 +49,7 @@ const ProfileScreen = ({ navigation }) => {
         </SafeAreaView>
       </View>
 
-      <Text>Territory Color: {color}</Text>
+      {/* <Text>Territory Color: {color}</Text> */}
 
       <Text>Total Distance Run: {totalDistance} </Text>
 
