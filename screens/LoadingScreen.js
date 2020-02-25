@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useDispatch } from 'react-redux';
+import { ScreenOrientation } from 'expo';
 
 import { ActivityIndicator, withTheme } from 'react-native-paper';
 import { auth } from '../services/firebase';

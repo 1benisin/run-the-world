@@ -49,7 +49,7 @@ const ProfileScreen = ({ navigation }) => {
         </SafeAreaView>
       </View>
 
-      <Text>Territory Color: {color}</Text>
+      {/* <Text>Territory Color: {color}</Text> */}
 
       <Text>Total Distance Run: {totalDistance} </Text>
 
@@ -61,6 +61,11 @@ const ProfileScreen = ({ navigation }) => {
 
       <View style={styles.runsContainer}>
         <ScrollView style={{ width: '100%' }}>
+          <View style={styles.runsHeader}>
+            <Text style={styles.runsHeaderText}>Date</Text>
+            <Text style={styles.runsHeaderText}>Distance</Text>
+            <Text style={styles.runsHeaderText}>Run ID</Text>
+          </View>
           {userRuns.map(run => (
             <View style={styles.runCard} key={run.id}>
               <Text>{utils.formatDate(run.startTime)}</Text>
@@ -102,6 +107,18 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between'
+  },
+  runsHeader: {
+    // backgroundColor: 'blue',
+    marginBottom: 6,
+    borderBottomColor: 'grey',
+    borderBottomWidth: 2,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  runsHeaderText: {
+    textTransform: 'uppercase'
   }
 });
 

@@ -65,7 +65,7 @@ const Map = props => {
         showsBackgroundLocationIndicator: true
       });
     } else {
-      Location.stopLocationUpdatesAsync(RUN_LOCATION_IN_BACKGROUND);
+      _stopFetchingLocationAsync();
     }
   }, [isRunning]);
 
@@ -104,11 +104,11 @@ const Map = props => {
   let _stopFetchingLocationAsync = async () => {
     // make sure task is registered before trying to stop it
     const taskRegistered = await TaskManager.isTaskRegisteredAsync(
-      USER_LOCATION_IN_BACKGROUND
+      RUN_LOCATION_IN_BACKGROUND
     );
 
     if (taskRegistered) {
-      Location.stopLocationUpdatesAsync(USER_LOCATION_IN_BACKGROUND);
+      Location.stopLocationUpdatesAsync(RUN_LOCATION_IN_BACKGROUND);
     }
   };
 
@@ -164,7 +164,7 @@ const Map = props => {
         runActions.addCoord({
           ...e.nativeEvent.coordinate,
           timestamp: Date.now(),
-          accuracy: 5
+          accuracy: 20
         })
       );
   };
