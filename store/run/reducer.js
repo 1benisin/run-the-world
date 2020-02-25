@@ -38,7 +38,7 @@ export default (state = initialState, action) => {
     case RUN_ADD_COORD_SUCCESS:
       return {
         ...state,
-        coordinates: [...state.coordinates, action.coord]
+        coordinates: [...action.coords]
       };
 
     // RUN_START

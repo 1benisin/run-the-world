@@ -164,7 +164,7 @@ const Map = props => {
         runActions.addCoord({
           ...e.nativeEvent.coordinate,
           timestamp: Date.now(),
-          accuracy: 5
+          accuracy: 20
         })
       );
   };

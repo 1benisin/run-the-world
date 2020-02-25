@@ -14,6 +14,8 @@ export const RUN_ADD_COORD_REQUEST = 'RUN_ADD_COORD_REQUEST';
 export const RUN_ADD_COORD_SUCCESS = 'RUN_ADD_COORD_SUCCESS';
 export const RUN_ADD_COORD_FAILURE = 'RUN_ADD_COORD_FAILURE';
 
+const geolib = require('geolib');
+
 import * as appErrorActions from '../appError/actions';
 import * as RunEffects from './effects';
 import { database } from '../../services/firebase';
@@ -45,9 +47,21 @@ export const addCoord = coord => {
 
     const isRunning = getState().runs.isRunning;
 
+    // if at the beginninig of run throw out any coordinates that are not accurate
+    // by removing any coordinates with move speeds too fast
+    const coordinates = getState().runs.coordinates;
+    let newCoords = [...coordinates];
+
+    // this is to erase the first coordinate that comes through
+    // when starting fetching coordinates in background. The first coord is inaccuarate
+    if (newCoords.length === 2) {
+      newCoords = newCoords.slice(1, newCoords.length);
+      newCoords.push(coord);
+    }
+    newCoords.push(coord);
+
     if (isRunning) {
-      console.log('added coord');
-      dispatch({ type: RUN_ADD_COORD_SUCCESS, coord });
+      dispatch({ type: RUN_ADD_COORD_SUCCESS, coords: newCoords });
     } else {
       dispatch({ type: RUN_ADD_COORD_FAILURE });
     }
@@ -77,16 +91,8 @@ export const saveRun = (ignoreError = false) => {
     const userId = getState().user.id;
     let { coordinates, startTime } = getState().runs;
 
-    // TODO delete
-    // console.log('run length', coordinates.length);
-    // coordinates = noiseyRun;
-    // console.log('run length', coordinates.length);
-    // await database.ref('debug/' + Date.now()).set(coordinates);
-    // console.log('coordinates', coordinates);
-    // coordinates = coordinates.map(coord => {
-    //   return { latitude: coord.latitude, longitude: coord.longitude };
-    // });
-    // delete
+    // get rid of any coordinates with accuracy less than 25
+    coordinates = coordinates.filter(c => c.accuracy < 25);
 
     // denoise run using Kalman's algorithm
     coordinates = runKalmanOnLocations(coordinates, 1000);
