@@ -8,6 +8,8 @@ Made with React-Native, Expo, Firebase, Redux, Jest
 
 In the process of getting approved on Apple and Andriod app stores.
 
+See Preview video below:
+
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=ltN9dEYDWNg
 " target="_blank"><img src="http://img.youtube.com/vi/ltN9dEYDWNg/0.jpg" 
 alt="Run the World app v1" border="10" /></a>
