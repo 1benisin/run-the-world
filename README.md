@@ -1,42 +1,50 @@
-# Run the World
-A fitness app that tracks your runs on a map and claims territory based on completed runs.
-Steal and maintian control of as much territory as possible.
+# Welcome to your Expo app 👋
 
-This is a solo project by Benjamin Clark.
+This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-Made with React-Native, Expo, Firebase, Redux, Jest
+## Get started
 
-In the process of getting approved on Apple and Andriod app stores.
+1. Install dependencies
 
-See Preview video below:
+   ```bash
+   npm install
+   ```
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=ltN9dEYDWNg
-" target="_blank"><img src="http://img.youtube.com/vi/ltN9dEYDWNg/0.jpg" 
-alt="Run the World app v1" border="10" /></a>
+2. Start the app
 
-## Motivation
-As a user I wan to be able to track my fitness runs. I want to know the time, speed, duration of my runs so I can improve over time.
-As a user I want to be able to compete again other user to motivate me to excercise harder as well as more oftern.
+   ```bash
+   npx expo start
+   ```
 
+In the output, you'll find options to open the app in a
 
-### strech goal :
+- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-As a user I want to be able to have a running group and use the app cooperatively as well as competitively.
+You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## Get a fresh project
 
-## Build status
-02/21/20 - MVP achieved. 
-02/27/20 - preparing app for Apple store and beta launch through TestFlight
+When you're ready, run:
 
-## How to use?
-npm install
-npm start
+```bash
+npm run reset-project
+```
 
-## Contribute
-No contribution guidelines at this point. 
+This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Credits
-Benjamin Clark
+## Learn more
 
-## License
-MIT © Benjamin Clark
+To learn more about developing your project with Expo, look at the following resources:
+
+- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+
+## Join the community
+
+Join our community of developers creating universal apps.
+
+- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
