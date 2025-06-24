@@ -18,10 +18,6 @@ export default {
       bundleIdentifier: "com.runtheworld.app",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
-        NSLocationWhenInUseUsageDescription:
-          "This app needs access to your location to show you nearby running routes and track your runs.",
-        NSLocationAlwaysAndWhenInUseUsageDescription:
-          "This app needs access to your location to track your runs and show you nearby running routes even when the app is in the background.",
       },
       config: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
@@ -43,6 +39,26 @@ export default {
       },
     },
     owner: "1benisin",
-    plugins: ["expo-maps"],
+    plugins: [
+      "expo-maps",
+      [
+        "expo-video",
+        {
+          supportsBackgroundPlayback: true,
+          supportsPictureInPicture: true,
+        },
+      ],
+      [
+        "expo-location",
+        {
+          locationWhenInUsePermission:
+            "This app needs access to your location to show you nearby running routes and track your runs.",
+          locationAlwaysAndWhenInUsePermission:
+            "This app needs access to your location to track your runs and show you nearby running routes even when the app is in the background.",
+          isIosBackgroundLocationEnabled: true,
+          isAndroidBackgroundLocationEnabled: true,
+        },
+      ],
+    ],
   },
 };
