@@ -61,6 +61,7 @@ export interface UseLocationReturn {
   error: LocationError | null;
   isLoading: boolean;
   requestPermission: () => Promise<boolean>;
+  getCurrentLocation: () => Promise<void>;
   startTracking: () => Promise<void>;
   stopTracking: () => void;
 }

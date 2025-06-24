@@ -1,19 +1,18 @@
 import React from "react";
-import { StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { MapViewSimple } from "../../components/MapViewSimple";
+import { StyleSheet, View } from "react-native";
+import { Map } from "../../components/Map";
 
 export default function LocationScreen() {
   return (
-    <SafeAreaView style={styles.container}>
-      <MapViewSimple />
-    </SafeAreaView>
+    <View style={styles.container}>
+      <Map />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#f0f0f0",
   },
 });

@@ -174,6 +174,7 @@ export const useUserLocation = (): UseLocationReturn => {
     error,
     isLoading,
     requestPermission,
+    getCurrentLocation,
     startTracking,
     stopTracking,
   };
