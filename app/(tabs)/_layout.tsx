@@ -7,7 +7,6 @@ export default function TabsLayout() {
     <Tabs tabBar={(props) => <CustomTabBar {...props} />}>
       <Tabs.Screen name="index" options={{ headerShown: false }} />
       <Tabs.Screen name="location" options={{ headerShown: false }} />
-      <Tabs.Screen name="favorites" options={{ headerShown: false }} />
       <Tabs.Screen name="profile" options={{ headerShown: false }} />
     </Tabs>
   );

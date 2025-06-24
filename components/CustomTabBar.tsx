@@ -1,13 +1,36 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import React from "react";
+import React, { useEffect } from "react";
 import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocation } from "../context/LocationContext";
 
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { promptPermissions } = useLocation();
+  const runButtonTranslateY = useSharedValue(110); // Start hidden and off-screen
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: runButtonTranslateY.value }],
+    };
+  });
+
+  useEffect(() => {
+    const isLocationRoute = state.routes[state.index].name === "location";
+    // -52 makes it appear above the tab bar.
+    // 110 makes it disappear off the bottom of the screen.
+    runButtonTranslateY.value = withTiming(isLocationRoute ? -52 : 110, {
+      duration: 600,
+      easing: Easing.out(Easing.exp),
+    });
+  }, [state.index, state.routes, runButtonTranslateY]);
 
   const handleTabPress = (routeName: string) => {
     navigation.navigate(routeName);
@@ -23,24 +46,29 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+      {/* Floating Run Button - rendered behind tab bar */}
+      <Animated.View style={[styles.runButton, animatedStyle]}>
+        <TouchableOpacity
+          onPress={handleRunButtonPress}
+          activeOpacity={0.8}
+          style={styles.runButtonTouchable}
+        >
+          <View style={styles.runButtonInner}>
+            <MaterialCommunityIcons name="run" size={32} color="white" />
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+
       <View style={styles.tabBar}>
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
           const iconName = getIconName(route.name, isFocused);
 
-          // Add extra space between Location and Favorites
-          const extraMargin =
-            route.name === "location"
-              ? { marginRight: 40 }
-              : route.name === "favorites"
-              ? { marginLeft: 40 }
-              : {};
-
           return (
             <TouchableOpacity
               key={route.name}
               onPress={() => handleTabPress(route.name)}
-              style={[styles.tabButton, extraMargin]}
+              style={styles.tabButton}
               activeOpacity={0.7}
             >
               <MaterialCommunityIcons
@@ -52,17 +80,6 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           );
         })}
       </View>
-
-      {/* Floating Run Button */}
-      <TouchableOpacity
-        style={styles.runButton}
-        onPress={handleRunButtonPress}
-        activeOpacity={0.8}
-      >
-        <View style={styles.runButtonInner}>
-          <MaterialCommunityIcons name="run" size={32} color="white" />
-        </View>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -76,8 +93,6 @@ function getIconName(
       return isFocused ? "home" : "home-outline";
     case "location":
       return isFocused ? "map-marker" : "map-marker-outline";
-    case "favorites":
-      return isFocused ? "heart" : "heart-outline";
     case "profile":
       return isFocused ? "account" : "account-outline";
     default:
@@ -114,6 +129,7 @@ const styles = StyleSheet.create({
         elevation: 8,
       },
     }),
+    zIndex: 1, // Ensure tab bar is on top
   },
   tabButton: {
     flex: 1,
@@ -125,6 +141,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 40,
     alignSelf: "center",
+  },
+  runButtonTouchable: {
     width: 64,
     height: 64,
     borderRadius: 32,

@@ -48,6 +48,7 @@ export default function Auth() {
 
   async function signInWithEmail() {
     if (loading) return;
+    console.log("signInWithEmail");
 
     // Validate fields before proceeding
     if (!validateFields()) return;
@@ -60,6 +61,7 @@ export default function Auth() {
 
     if (error) Alert.alert(error.message);
     setLoading(false);
+    console.log("signInWithEmail done");
   }
 
   async function signUpWithEmail() {

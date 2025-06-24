@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import MapView, { Region } from "react-native-maps";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocation } from "../context/LocationContext";
 import { useUserLocation } from "../hooks/useUserLocation";
 
@@ -15,6 +16,7 @@ export function Map() {
   const { promptPermissions } = useLocation();
   const { location, getCurrentLocation, isLoading } = useUserLocation();
   const mapViewRef = useRef<MapView>(null);
+  const insets = useSafeAreaInsets();
 
   const handleMyLocationPress = async () => {
     const hasPermission = await promptPermissions();
@@ -49,7 +51,7 @@ export function Map() {
         showsUserLocation
       />
       <TouchableOpacity
-        style={styles.myLocationButton}
+        style={[styles.myLocationButton, { top: insets.top || 20 }]}
         onPress={handleMyLocationPress}
         disabled={isLoading}
       >
@@ -98,9 +100,8 @@ const styles = StyleSheet.create({
   },
   myLocationButton: {
     position: "absolute",
-    bottom: 20,
     right: 20,
-    backgroundColor: "white",
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
     borderRadius: 8,
     padding: 8,
     shadowColor: "#000",
